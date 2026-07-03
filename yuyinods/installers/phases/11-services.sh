@@ -361,6 +361,33 @@ except Exception:
 " "$svc" 2>/dev/null || printf '\tfalse\n'
     }
 
+    _phase11_try_stock_lemonade_image() {
+        local svc="$1" target_image="$2" source_image
+        [[ "$svc" == "llama-server" ]] || return 1
+        [[ -n "$target_image" ]] || return 1
+        [[ "${YUYINODS_FORCE_REBUILD:-false}" == "true" ]] && return 1
+        [[ "${YUYINODS_FORCE_LLAMA_CUSTOM_BUILD:-false}" == "true" ]] && return 1
+
+        source_image="${LEMONADE_SERVER_IMAGE:-$(_phase11_env_get LEMONADE_SERVER_IMAGE "ghcr.io/lemonade-sdk/lemonade-server:v10.2.0")}"
+        [[ -n "$source_image" ]] || return 1
+        if ! $DOCKER_CMD image inspect "$source_image" &>/dev/null; then
+            return 1
+        fi
+
+        ai "Using existing Lemonade image for llama-server: $source_image"
+        if ! $DOCKER_CMD tag "$source_image" "$target_image" >>"$LOG_FILE" 2>&1; then
+            warn "Could not tag $source_image as $target_image"
+            return 1
+        fi
+
+        # Stock Lemonade does not contain /opt/llama-custom/llama-server.
+        # Clear the custom override when we skip the custom ROCm image build.
+        _phase11_env_set LEMONADE_LLAMACPP_ROCM_BIN ""
+        export LEMONADE_LLAMACPP_ROCM_BIN=""
+        ai_ok "llama-server image already available via Lemonade base image"
+        return 0
+    }
+
     # Cloud/external Lemonade modes skip YuyinODS-managed GGUF downloads and
     # auto-enable LiteLLM because it is the routing surface for both paths.
     if [[ "${YUYINODS_MODE:-local}" == "cloud" ]]; then
@@ -834,6 +861,11 @@ MODELS_INI_EOF
 
         if [[ "${YUYINODS_FORCE_REBUILD:-false}" != "true" && -n "$_resolved_image" ]] && \
             $DOCKER_CMD image inspect "$_resolved_image" &>/dev/null; then
+            printf "\r  ${BGRN}✓${NC} %-60s\n" "$_svc image already built"
+            continue
+        fi
+
+        if _phase11_try_stock_lemonade_image "$_svc" "$_resolved_image"; then
             printf "\r  ${BGRN}✓${NC} %-60s\n" "$_svc image already built"
             continue
         fi
