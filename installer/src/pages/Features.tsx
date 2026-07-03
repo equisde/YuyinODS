@@ -95,7 +95,7 @@ export default function Features({ onNext }: Props) {
               onClick={() => toggle(feature.id)}
               className={`w-full text-left rounded-lg px-4 py-3 transition-colors border ${
                 isSelected
-                  ? "bg-ods-600/10 border-ods-600/50"
+                  ? "bg-yuyinods-600/10 border-yuyinods-600/50"
                   : "bg-gray-900 border-gray-800 hover:border-gray-700"
               }`}
             >
@@ -103,7 +103,7 @@ export default function Features({ onNext }: Props) {
                 <div
                   className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center text-xs ${
                     isSelected
-                      ? "bg-ods-600 border-ods-600 text-white"
+                      ? "bg-yuyinods-600 border-yuyinods-600 text-white"
                       : "border-gray-600"
                   } ${isRequired ? "opacity-50" : ""}`}
                 >

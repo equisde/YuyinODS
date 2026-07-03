@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicegui/tauri-v2/main/src-tauri/gen/schemas/desktop-schema.json",
-  "productName": "ODS Installer",
+  "productName": "YuyinODS Installer",
   "version": "0.1.0",
   "identifier": "ai.ods.installer",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "ODS Installer",
+        "title": "YuyinODS Installer",
         "width": 800,
         "height": 600,
         "resizable": true,

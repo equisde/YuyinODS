@@ -4,18 +4,18 @@ on:
   push:
     branches: [main]
     paths:
-      - "ods/docker-compose*.yml"
-      - "ods/installers/**/*compose*.yml"
-      - "ods/extensions/services/**/compose*.yaml"
-      - "ods/scripts/resolve-compose-stack.sh"
+      - "yuyinods/docker-compose*.yml"
+      - "yuyinods/installers/**/*compose*.yml"
+      - "yuyinods/extensions/services/**/compose*.yaml"
+      - "yuyinods/scripts/resolve-compose-stack.sh"
       - ".github/workflows/validate-compose.yml"
   pull_request:
     branches: [main]
     paths:
-      - "ods/docker-compose*.yml"
-      - "ods/installers/**/*compose*.yml"
-      - "ods/extensions/services/**/compose*.yaml"
-      - "ods/scripts/resolve-compose-stack.sh"
+      - "yuyinods/docker-compose*.yml"
+      - "yuyinods/installers/**/*compose*.yml"
+      - "yuyinods/extensions/services/**/compose*.yaml"
+      - "yuyinods/scripts/resolve-compose-stack.sh"
       - ".github/workflows/validate-compose.yml"
 
 permissions:
@@ -32,17 +32,17 @@ jobs:
         env:
           WEBUI_SECRET: ci-placeholder
         run: |
-          echo "Validating ods/docker-compose.base.yml"
-          docker compose -f ods/docker-compose.base.yml config --quiet
+          echo "Validating yuyinods/docker-compose.base.yml"
+          docker compose -f yuyinods/docker-compose.base.yml config --quiet
 
       - name: Validate installer compose overlays (base + overlay)
         env:
           WEBUI_SECRET: ci-placeholder
         run: |
-          compose_files=$(find ods/installers -name '*compose*.yml' -type f 2>/dev/null || true)
+          compose_files=$(find yuyinods/installers -name '*compose*.yml' -type f 2>/dev/null || true)
 
           if [ -z "$compose_files" ]; then
-            echo "No installer compose files found under ods/installers/"
+            echo "No installer compose files found under yuyinods/installers/"
             exit 0
           fi
 
@@ -53,7 +53,7 @@ jobs:
           failed=0
           for f in $compose_files; do
             echo "Validating $f (merged with docker-compose.base.yml) ..."
-            if docker compose -f ods/docker-compose.base.yml -f "$f" config --quiet 2>&1; then
+            if docker compose -f yuyinods/docker-compose.base.yml -f "$f" config --quiet 2>&1; then
               echo "  OK"
             else
               echo "  FAILED"

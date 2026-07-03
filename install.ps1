@@ -1,5 +1,5 @@
-# ODS Root Installer (Windows)
-# Delegates to ods/installers/windows/install-windows.ps1
+# YuyinODS Root Installer (Windows)
+# Delegates to yuyinods/installers/windows/install-windows.ps1
 
 param(
     [switch]$DryRun,
@@ -29,14 +29,14 @@ param(
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-Write-Host "ODS Installer" -ForegroundColor Cyan
+Write-Host "YuyinODS Installer" -ForegroundColor Cyan
 Write-Host ""
 
 # Delegate to Windows installer
-$ODSInstaller = Join-Path (Join-Path (Join-Path $ScriptDir "ods") "installers") "windows" | Join-Path -ChildPath "install-windows.ps1"
-if (-not (Test-Path $ODSInstaller)) {
+$YuyinODSInstaller = Join-Path (Join-Path (Join-Path $ScriptDir "yuyinods") "installers") "windows" | Join-Path -ChildPath "install-windows.ps1"
+if (-not (Test-Path $YuyinODSInstaller)) {
     Write-Host "Error: Windows installer not found" -ForegroundColor Red
-    Write-Host "Expected: $ODSInstaller" -ForegroundColor Red
+    Write-Host "Expected: $YuyinODSInstaller" -ForegroundColor Red
     exit 1
 }
 
@@ -44,7 +44,7 @@ if (-not (Test-Path $ODSInstaller)) {
 # A successful PowerShell script can leave a stale $LASTEXITCODE from a handled
 # native command, so only use $LASTEXITCODE when the delegated installer fails.
 $global:LASTEXITCODE = 0
-& $ODSInstaller @PSBoundParameters
+& $YuyinODSInstaller @PSBoundParameters
 $installerSucceeded = $?
 $installerExit = if ($null -ne $global:LASTEXITCODE) { [int]$global:LASTEXITCODE } else { 0 }
 if ($installerExit -ne 0) {

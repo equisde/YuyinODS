@@ -17,9 +17,9 @@ from pathlib import Path
 PROTECTED_PATTERNS = [
     ".github/workflows/",
     ".env",
-    "ods/installers/",
-    "ods/ods-cli",
-    "ods/config/",
+    "yuyinods/installers/",
+    "yuyinods/yuyinods-cli",
+    "yuyinods/config/",
 ]
 
 

@@ -36,7 +36,7 @@ jobs:
           export MAX_CONTEXT=4096
           export N_GPU_LAYERS=0
           export GPU_BACKEND="cpu"
-          export ODS_TIER="${{ matrix.tier }}"
+          export YUYINODS_TIER="${{ matrix.tier }}"
           export HW_CLASS="cpu"
 
           # Generate a .env using the installer's env generation logic
@@ -60,8 +60,8 @@ jobs:
           N8N_USER=admin
           N8N_PASS=test-pass-changeme
           OPENCLAW_TOKEN=sk-test-openclaw-token
-          ODS_VERSION=2.1.0
-          ODS_TIER=${{ matrix.tier }}
+          YUYINODS_VERSION=2.1.0
+          YUYINODS_TIER=${{ matrix.tier }}
           GPU_BACKEND=cpu
           HW_CLASS=cpu
           LLM_API_URL=http://llama-server:8080

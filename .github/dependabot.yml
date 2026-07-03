@@ -45,7 +45,7 @@ updates:
           - "version-update:semver-major"
 
   - package-ecosystem: "npm"
-    directory: "/ods/extensions/services/dashboard"
+    directory: "/yuyinods/extensions/services/dashboard"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 1
@@ -62,7 +62,7 @@ updates:
           - "version-update:semver-major"
 
   - package-ecosystem: "pip"
-    directory: "/ods/extensions/services/dashboard-api"
+    directory: "/yuyinods/extensions/services/dashboard-api"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 1
@@ -72,7 +72,7 @@ updates:
           - "*"
 
   - package-ecosystem: "pip"
-    directory: "/ods/extensions/services/privacy-shield"
+    directory: "/yuyinods/extensions/services/privacy-shield"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 1
@@ -82,7 +82,7 @@ updates:
           - "*"
 
   - package-ecosystem: "pip"
-    directory: "/ods/extensions/services/token-spy"
+    directory: "/yuyinods/extensions/services/token-spy"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 1
@@ -92,7 +92,7 @@ updates:
           - "*"
 
   - package-ecosystem: "pip"
-    directory: "/ods/extensions/services/ape"
+    directory: "/yuyinods/extensions/services/ape"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 1

@@ -3,13 +3,13 @@
 ## Overview
 
 The Tauri installer GUI communicates with the existing bash installer via a
-simple line protocol. When the environment variable `ODS_INSTALLER_GUI=1` is
+simple line protocol. When the environment variable `YUYINODS_INSTALLER_GUI=1` is
 set, each phase emits structured progress lines that the GUI parses to update
 the progress bar.
 
 ## Setup
 
-1. Copy `progress-protocol.sh` to `ods/installers/lib/progress.sh`
+1. Copy `progress-protocol.sh` to `yuyinods/installers/lib/progress.sh`
 2. Add `source "${LIB_DIR}/progress.sh"` to `install-core.sh` (after the other
    lib sources)
 3. Add one `ods_progress` call at the start of each phase:
@@ -64,7 +64,7 @@ ods_progress 98 "summary" "Finishing up"
 ## Protocol Format
 
 ```
-ODS_PROGRESS:<percent>:<phase_id>:<human_message>
+YUYINODS_PROGRESS:<percent>:<phase_id>:<human_message>
 ```
 
 - `percent`: 0-100 integer
@@ -73,9 +73,9 @@ ODS_PROGRESS:<percent>:<phase_id>:<human_message>
 
 ## Notes
 
-- The `ods_progress` function is a no-op when `ODS_INSTALLER_GUI` is unset,
+- The `ods_progress` function is a no-op when `YUYINODS_INSTALLER_GUI` is unset,
   so it has zero impact on terminal installs.
-- The Tauri installer sets `ODS_INSTALLER_GUI=1` via the process environment
+- The Tauri installer sets `YUYINODS_INSTALLER_GUI=1` via the process environment
   before spawning `install.sh`.
 - The GUI also has fallback heuristic parsing that looks for keywords like
   "pulling", "starting services", "health check" etc. in stdout, so even

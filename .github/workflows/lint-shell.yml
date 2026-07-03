@@ -24,11 +24,11 @@ jobs:
 
       - name: Run ShellCheck on ods shell scripts
         run: |
-          # Find all .sh files under ods/
-          shfiles=$(find ods/ -name '*.sh' -type f)
+          # Find all .sh files under yuyinods/
+          shfiles=$(find yuyinods/ -name '*.sh' -type f)
 
           if [ -z "$shfiles" ]; then
-            echo "No .sh files found under ods/"
+            echo "No .sh files found under yuyinods/"
             exit 0
           fi
 
@@ -67,12 +67,12 @@ jobs:
           # shell scripts. Excludes: demo-offline.sh (echo'd documentation,
           # never executed) and test-extension-audit.sh (heredoc compose YAML
           # fixtures with container-internal localhost).
-          # Note: extensionless scripts (e.g. ods-cli) are not scanned by
-          # this glob; coverage is limited to *.sh / *.bash. ods-cli's
+          # Note: extensionless scripts (e.g. yuyinods-cli) are not scanned by
+          # this glob; coverage is limited to *.sh / *.bash. yuyinods-cli's
           # localhost sites were handled by the earlier localhost-to-127.0.0.1 sweep.
           matches=$(find ods -type f \( -name '*.sh' -o -name '*.bash' \) \
-            ! -path 'ods/scripts/demo-offline.sh' \
-            ! -path 'ods/tests/test-extension-audit.sh' \
+            ! -path 'yuyinods/scripts/demo-offline.sh' \
+            ! -path 'yuyinods/tests/test-extension-audit.sh' \
             -exec grep -nE 'curl[^|]*http://localhost:' {} + || true)
           if [ -n "$matches" ]; then
             echo "::error::curl http://localhost: detected; use 127.0.0.1 (IPv6 ::1 resolution can hang on macOS):"

@@ -279,14 +279,14 @@ fn state_file_path() -> std::path::PathBuf {
     {
         let base = std::env::var("LOCALAPPDATA").unwrap_or_else(|_| "C:\\ProgramData".into());
         std::path::PathBuf::from(base)
-            .join("ods")
+            .join("yuyinods")
             .join("installer-state.json")
     }
     #[cfg(target_os = "macos")]
     {
         let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".into());
         std::path::PathBuf::from(home)
-            .join("Library/Application Support/ods/installer-state.json")
+            .join("Library/Application Support/yuyinods/installer-state.json")
     }
     #[cfg(target_os = "linux")]
     {
@@ -295,7 +295,7 @@ fn state_file_path() -> std::path::PathBuf {
             format!("{}/.local/share", home)
         });
         std::path::PathBuf::from(base)
-            .join("ods")
+            .join("yuyinods")
             .join("installer-state.json")
     }
 }

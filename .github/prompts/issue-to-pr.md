@@ -11,9 +11,9 @@ Do NOT use AskUserQuestion. Do NOT pause for user input.
 4. Do NOT modify protected files:
    - `.github/workflows/*` — CI/CD pipelines
    - `.env*` — environment configuration
-   - `ods/installers/*` — core installer libraries and phases
-   - `ods/ods-cli` — main CLI tool
-   - `ods/config/*` — backend configuration files
+   - `yuyinods/installers/*` — core installer libraries and phases
+   - `yuyinods/yuyinods-cli` — main CLI tool
+   - `yuyinods/config/*` — backend configuration files
 5. Do NOT modify unrelated code, design philosophy docs, or import ordering
 6. Do NOT add unnecessary comments, docstrings, or type annotations to unchanged code
 7. Do NOT create new files unless absolutely necessary — prefer editing existing files

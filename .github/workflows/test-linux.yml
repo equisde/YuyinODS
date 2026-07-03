@@ -141,13 +141,13 @@ jobs:
         with:
           name: installer-sim
           path: |
-            ods/artifacts/installer-sim/summary.json
-            ods/artifacts/installer-sim/SUMMARY.md
-            ods/artifacts/installer-sim/golden-paths.json
-            ods/artifacts/installer-sim/linux-dryrun.log
-            ods/artifacts/installer-sim/macos-installer.log
-            ods/artifacts/installer-sim/windows-preflight-sim.json
-            ods/artifacts/installer-sim/macos-preflight.json
-            ods/artifacts/installer-sim/macos-doctor.json
-            ods/artifacts/installer-sim/doctor.json
-            ods/artifacts/update-rollback/evidence.json
+            yuyinods/artifacts/installer-sim/summary.json
+            yuyinods/artifacts/installer-sim/SUMMARY.md
+            yuyinods/artifacts/installer-sim/golden-paths.json
+            yuyinods/artifacts/installer-sim/linux-dryrun.log
+            yuyinods/artifacts/installer-sim/macos-installer.log
+            yuyinods/artifacts/installer-sim/windows-preflight-sim.json
+            yuyinods/artifacts/installer-sim/macos-preflight.json
+            yuyinods/artifacts/installer-sim/macos-doctor.json
+            yuyinods/artifacts/installer-sim/doctor.json
+            yuyinods/artifacts/update-rollback/evidence.json

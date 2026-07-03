@@ -45,26 +45,26 @@ After all updates, run `git diff` to verify:
 
 Use this mapping to determine which code files to read when validating each documentation file.
 
-### README.md (ods/README.md)
+### README.md (yuyinods/README.md)
 
 | Doc Section | Source of Truth |
 |-------------|----------------|
-| Service manifests table | `ods/extensions/services/*/manifest.yaml` |
-| CLI commands | `ods/ods-cli` |
-| Environment variables | `ods/.env.example`, `ods/.env.schema.json` |
-| Docker Compose services | `ods/docker-compose.base.yml`, GPU overlays |
-| Test commands | `ods/Makefile`, `ods/tests/` directory layout |
-| Install instructions | `ods/install-core.sh`, `ods/installers/phases/` |
+| Service manifests table | `yuyinods/extensions/services/*/manifest.yaml` |
+| CLI commands | `yuyinods/yuyinods-cli` |
+| Environment variables | `yuyinods/.env.example`, `yuyinods/.env.schema.json` |
+| Docker Compose services | `yuyinods/docker-compose.base.yml`, GPU overlays |
+| Test commands | `yuyinods/Makefile`, `yuyinods/tests/` directory layout |
+| Install instructions | `yuyinods/install-core.sh`, `yuyinods/installers/phases/` |
 
 ### CLAUDE.md
 
 | Doc Section | Source of Truth |
 |-------------|----------------|
 | Repository Structure | Actual directory layout |
-| Build & Development Commands | `ods/Makefile` targets |
-| Extension System | `ods/extensions/services/*/manifest.yaml` |
-| GPU Backend / Tier System | `ods/config/backends/*.json`, `ods/installers/lib/tier-map.sh` |
-| Dashboard API | `ods/extensions/services/dashboard-api/routers/*.py` |
+| Build & Development Commands | `yuyinods/Makefile` targets |
+| Extension System | `yuyinods/extensions/services/*/manifest.yaml` |
+| GPU Backend / Tier System | `yuyinods/config/backends/*.json`, `yuyinods/installers/lib/tier-map.sh` |
+| Dashboard API | `yuyinods/extensions/services/dashboard-api/routers/*.py` |
 | Key File Paths | Actual file existence verification |
 | CI Workflows | `.github/workflows/*.yml` |
 
@@ -72,7 +72,7 @@ Use this mapping to determine which code files to read when validating each docu
 
 ### README.md
 - Service list must match existing extension manifests
-- CLI examples must match actual ods-cli commands
+- CLI examples must match actual yuyinods-cli commands
 - Environment variables must match `.env.example`
 - Do NOT modify the project description, badges, or contribution guidelines
 

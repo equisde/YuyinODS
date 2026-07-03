@@ -1,0 +1,7 @@
+[Unit]
+Description=Memory Shepherd — Workspace Files (AGENTS.md + TOOLS.md)
+
+[Service]
+Type=oneshot
+ExecStart=%h/yuyinods/memory-shepherd/memory-shepherd.sh yuyinods-agent-agents
+ExecStart=%h/yuyinods/memory-shepherd/memory-shepherd.sh yuyinods-agent-tools

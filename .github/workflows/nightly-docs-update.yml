@@ -69,13 +69,13 @@ jobs:
 
           AFFECTED_DOCS=""
 
-          # ods/installers/ -> README.md, CLAUDE.md
-          if echo "$CHANGED_FILES" | grep -qE '^ods/installers/'; then
+          # yuyinods/installers/ -> README.md, CLAUDE.md
+          if echo "$CHANGED_FILES" | grep -qE '^yuyinods/installers/'; then
             AFFECTED_DOCS="README.md,CLAUDE.md"
           fi
 
-          # ods/scripts/ -> README.md, CLAUDE.md
-          if echo "$CHANGED_FILES" | grep -qE '^ods/scripts/'; then
+          # yuyinods/scripts/ -> README.md, CLAUDE.md
+          if echo "$CHANGED_FILES" | grep -qE '^yuyinods/scripts/'; then
             for doc in "README.md" "CLAUDE.md"; do
               if ! echo "$AFFECTED_DOCS" | grep -q "$doc"; then
                 AFFECTED_DOCS="${AFFECTED_DOCS:+$AFFECTED_DOCS,}$doc"
@@ -83,8 +83,8 @@ jobs:
             done
           fi
 
-          # ods/extensions/services/dashboard-api/ -> README.md, CLAUDE.md
-          if echo "$CHANGED_FILES" | grep -qE '^ods/extensions/services/dashboard-api/'; then
+          # yuyinods/extensions/services/dashboard-api/ -> README.md, CLAUDE.md
+          if echo "$CHANGED_FILES" | grep -qE '^yuyinods/extensions/services/dashboard-api/'; then
             for doc in "README.md" "CLAUDE.md"; do
               if ! echo "$AFFECTED_DOCS" | grep -q "$doc"; then
                 AFFECTED_DOCS="${AFFECTED_DOCS:+$AFFECTED_DOCS,}$doc"
@@ -92,15 +92,15 @@ jobs:
             done
           fi
 
-          # ods/extensions/services/dashboard/ -> README.md
-          if echo "$CHANGED_FILES" | grep -qE '^ods/extensions/services/dashboard/'; then
+          # yuyinods/extensions/services/dashboard/ -> README.md
+          if echo "$CHANGED_FILES" | grep -qE '^yuyinods/extensions/services/dashboard/'; then
             if ! echo "$AFFECTED_DOCS" | grep -q "README.md"; then
               AFFECTED_DOCS="${AFFECTED_DOCS:+$AFFECTED_DOCS,}README.md"
             fi
           fi
 
-          # ods/config/ -> README.md, CLAUDE.md
-          if echo "$CHANGED_FILES" | grep -qE '^ods/config/'; then
+          # yuyinods/config/ -> README.md, CLAUDE.md
+          if echo "$CHANGED_FILES" | grep -qE '^yuyinods/config/'; then
             for doc in "README.md" "CLAUDE.md"; do
               if ! echo "$AFFECTED_DOCS" | grep -q "$doc"; then
                 AFFECTED_DOCS="${AFFECTED_DOCS:+$AFFECTED_DOCS,}$doc"
@@ -108,8 +108,8 @@ jobs:
             done
           fi
 
-          # ods/ods-cli -> README.md, CLAUDE.md
-          if echo "$CHANGED_FILES" | grep -qE '^ods/ods-cli$'; then
+          # yuyinods/yuyinods-cli -> README.md, CLAUDE.md
+          if echo "$CHANGED_FILES" | grep -qE '^yuyinods/yuyinods-cli$'; then
             for doc in "README.md" "CLAUDE.md"; do
               if ! echo "$AFFECTED_DOCS" | grep -q "$doc"; then
                 AFFECTED_DOCS="${AFFECTED_DOCS:+$AFFECTED_DOCS,}$doc"
@@ -117,22 +117,22 @@ jobs:
             done
           fi
 
-          # ods/docker-compose* -> README.md
-          if echo "$CHANGED_FILES" | grep -qE '^ods/docker-compose'; then
+          # yuyinods/docker-compose* -> README.md
+          if echo "$CHANGED_FILES" | grep -qE '^yuyinods/docker-compose'; then
             if ! echo "$AFFECTED_DOCS" | grep -q "README.md"; then
               AFFECTED_DOCS="${AFFECTED_DOCS:+$AFFECTED_DOCS,}README.md"
             fi
           fi
 
-          # ods/tests/ -> README.md
-          if echo "$CHANGED_FILES" | grep -qE '^ods/tests/'; then
+          # yuyinods/tests/ -> README.md
+          if echo "$CHANGED_FILES" | grep -qE '^yuyinods/tests/'; then
             if ! echo "$AFFECTED_DOCS" | grep -q "README.md"; then
               AFFECTED_DOCS="${AFFECTED_DOCS:+$AFFECTED_DOCS,}README.md"
             fi
           fi
 
           # .env* -> README.md, CLAUDE.md
-          if echo "$CHANGED_FILES" | grep -qE '^ods/\.env'; then
+          if echo "$CHANGED_FILES" | grep -qE '^yuyinods/\.env'; then
             for doc in "README.md" "CLAUDE.md"; do
               if ! echo "$AFFECTED_DOCS" | grep -q "$doc"; then
                 AFFECTED_DOCS="${AFFECTED_DOCS:+$AFFECTED_DOCS,}$doc"
@@ -211,10 +211,10 @@ jobs:
           ALLOWED_FILES=(
             "README.md"
             "CLAUDE.md"
-            "ods/README.md"
-            "ods/docs/INSTALLER-ARCHITECTURE.md"
-            "ods/docs/EXTENSIONS.md"
-            "ods/docs/TESTING.md"
+            "yuyinods/README.md"
+            "yuyinods/docs/INSTALLER-ARCHITECTURE.md"
+            "yuyinods/docs/EXTENSIONS.md"
+            "yuyinods/docs/TESTING.md"
           )
 
           MODIFIED=$(git diff --name-only)

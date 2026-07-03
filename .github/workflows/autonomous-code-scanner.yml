@@ -58,13 +58,13 @@ jobs:
           PROTECTED_PATTERNS=(
             ".github/workflows/*"
             ".env*"
-            "ods/installers/*"
-            "ods/ods-cli"
-            "ods/config/*"
+            "yuyinods/installers/*"
+            "yuyinods/yuyinods-cli"
+            "yuyinods/config/*"
           )
 
           # Generate Python file list
-          git ls-files 'ods/**/*.py' '.github/scripts/*.py' | while read -r file; do
+          git ls-files 'yuyinods/**/*.py' '.github/scripts/*.py' | while read -r file; do
             PROTECTED=false
             for pattern in "${PROTECTED_PATTERNS[@]}"; do
               if [[ "$file" == $pattern ]]; then
@@ -79,13 +79,13 @@ jobs:
           done > /tmp/scannable_python.txt
 
           # Generate TypeScript file list (dashboard)
-          git ls-files 'ods/extensions/services/dashboard/src/**/*.ts' \
-                       'ods/extensions/services/dashboard/src/**/*.tsx' | while read -r file; do
+          git ls-files 'yuyinods/extensions/services/dashboard/src/**/*.ts' \
+                       'yuyinods/extensions/services/dashboard/src/**/*.tsx' | while read -r file; do
             echo "$file"
           done > /tmp/scannable_typescript.txt
 
           # Generate Shell file list
-          git ls-files 'ods/scripts/*.sh' 'ods/tests/**/*.sh' | while read -r file; do
+          git ls-files 'yuyinods/scripts/*.sh' 'yuyinods/tests/**/*.sh' | while read -r file; do
             PROTECTED=false
             for pattern in "${PROTECTED_PATTERNS[@]}"; do
               if [[ "$file" == $pattern ]]; then
@@ -258,8 +258,8 @@ jobs:
           echo "## Security Scan Results" >> $GITHUB_STEP_SUMMARY
 
           # Run Bandit on ODS Python files
-          bandit -r ods/extensions/services/dashboard-api \
-                    ods/scripts \
+          bandit -r yuyinods/extensions/services/dashboard-api \
+                    yuyinods/scripts \
                     .github/scripts \
             --format json \
             --output /tmp/bandit-results.json \

@@ -6,15 +6,15 @@ use std::process::{Command, Stdio};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-const DEFAULT_REPO_URL: &str = "https://github.com/Light-Heart-Labs/ODS.git";
+const DEFAULT_REPO_URL: &str = "https://github.com/equisde/YuyinODS.git";
 const DEFAULT_INSTALL_REF: &str = "main";
 
 fn repo_url() -> &'static str {
-    option_env!("ODS_REPO_URL").unwrap_or(DEFAULT_REPO_URL)
+    option_env!("YUYINODS_REPO_URL").unwrap_or(DEFAULT_REPO_URL)
 }
 
 fn install_ref() -> &'static str {
-    option_env!("ODS_INSTALL_REF").unwrap_or(DEFAULT_INSTALL_REF)
+    option_env!("YUYINODS_INSTALL_REF").unwrap_or(DEFAULT_INSTALL_REF)
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -24,7 +24,7 @@ pub struct ProgressEvent {
     pub message: String,
 }
 
-/// Run the full ODS installation.
+/// Run the full YuyinODS installation.
 /// This clones the repo and delegates to the existing install-core.sh.
 pub fn run_install(
     state: Arc<Mutex<InstallState>>,
@@ -33,14 +33,14 @@ pub fn run_install(
     features: Vec<String>,
 ) -> Result<(), String> {
     // Phase 1: Clone the repo
-    update_progress(&state, "Downloading ODS", 5);
+    update_progress(&state, "Downloading YuyinODS", 5);
 
     ensure_checkout(&install_dir)?;
 
     update_progress(&state, "Configuring installation", 15);
 
     // Phase 2: Build installer arguments
-    let ods_dir = install_dir.join("ods");
+    let ods_dir = install_dir.join("yuyinods");
     let mut args = vec!["--tier".to_string(), tier.to_string()];
 
     if features.contains(&"voice".to_string()) {
@@ -99,7 +99,7 @@ pub fn run_install(
         Command::new("powershell.exe")
             .args(&ps_args)
             .current_dir(&install_dir)
-            .env("ODS_INSTALLER_GUI", "1")
+            .env("YUYINODS_INSTALLER_GUI", "1")
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
@@ -108,7 +108,7 @@ pub fn run_install(
         Command::new(&install_script)
             .args(&args)
             .current_dir(&ods_dir)
-            .env("ODS_INSTALLER_GUI", "1")
+            .env("YUYINODS_INSTALLER_GUI", "1")
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
@@ -170,7 +170,7 @@ pub fn run_install(
 }
 
 fn ensure_checkout(install_dir: &Path) -> Result<(), String> {
-    if install_dir.join("ods").exists() {
+    if install_dir.join("yuyinods").exists() {
         return validate_checkout(install_dir);
     }
 
@@ -182,7 +182,7 @@ fn ensure_checkout(install_dir: &Path) -> Result<(), String> {
             .is_some()
     {
         return Err(format!(
-            "{} already exists but is not a ODS checkout. Choose an empty directory or the existing ODS install directory.",
+            "{} already exists but is not a YuyinODS checkout. Choose an empty directory or the existing YuyinODS install directory.",
             install_dir.display()
         ));
     }
@@ -198,7 +198,7 @@ fn ensure_checkout(install_dir: &Path) -> Result<(), String> {
     if !clone.status.success() {
         let err = String::from_utf8_lossy(&clone.stderr);
         return Err(format!(
-            "Git clone failed for ODS ref '{}': {}",
+            "Git clone failed for YuyinODS ref '{}': {}",
             install_ref(),
             err
         ));
@@ -210,7 +210,7 @@ fn ensure_checkout(install_dir: &Path) -> Result<(), String> {
 fn validate_checkout(install_dir: &Path) -> Result<(), String> {
     if !install_dir.join(".git").exists() {
         return Err(format!(
-            "{} contains a ods directory but is not a git checkout. Refusing to run installer scripts from an unverified directory.",
+            "{} contains a yuyinods directory but is not a git checkout. Refusing to run installer scripts from an unverified directory.",
             install_dir.display()
         ));
     }
@@ -226,7 +226,7 @@ fn validate_checkout(install_dir: &Path) -> Result<(), String> {
     let origin = run_git(install_dir, &["remote", "get-url", "origin"])?;
     if normalize_repo_url(&origin) != normalize_repo_url(repo_url()) {
         return Err(format!(
-            "{} is not a ODS checkout from {}.",
+            "{} is not a YuyinODS checkout from {}.",
             install_dir.display(),
             repo_url()
         ));
@@ -265,9 +265,9 @@ fn normalize_repo_url(url: &str) -> String {
 }
 
 /// Parse a progress line from the installer.
-/// Expected format: ODS_PROGRESS:<percent>:<message>
+/// Expected format: YUYINODS_PROGRESS:<percent>:<message>
 fn parse_progress_line(line: &str) -> Option<ProgressEvent> {
-    if let Some(rest) = line.strip_prefix("ODS_PROGRESS:") {
+    if let Some(rest) = line.strip_prefix("YUYINODS_PROGRESS:") {
         let parts: Vec<&str> = rest.splitn(3, ':').collect();
         if parts.len() >= 2 {
             let percent = parts[0].parse().unwrap_or(0);
@@ -347,17 +347,17 @@ mod tests {
 
     #[test]
     fn default_repo_url_uses_canonical_ods_repo() {
-        assert_eq!(DEFAULT_REPO_URL, "https://github.com/Light-Heart-Labs/ODS.git");
+        assert_eq!(DEFAULT_REPO_URL, "https://github.com/equisde/YuyinODS.git");
     }
 
     #[test]
     fn normalize_repo_url_accepts_common_github_forms() {
         assert_eq!(
-            normalize_repo_url("git@github.com:Light-Heart-Labs/ODS.git"),
+            normalize_repo_url("git@github.com:equisde/YuyinODS.git"),
             normalize_repo_url(DEFAULT_REPO_URL)
         );
         assert_eq!(
-            normalize_repo_url("ssh://git@github.com/Light-Heart-Labs/ODS.git/"),
+            normalize_repo_url("ssh://git@github.com/equisde/YuyinODS.git/"),
             normalize_repo_url(DEFAULT_REPO_URL)
         );
     }

@@ -1,8 +1,8 @@
 [package]
-name = "ods-installer"
+name = "yuyinods-installer"
 version = "0.1.0"
 edition = "2021"
-description = "ODS One-Click Installer"
+description = "YuyinODS One-Click Installer"
 
 [dependencies]
 tauri = { version = "2", features = [] }

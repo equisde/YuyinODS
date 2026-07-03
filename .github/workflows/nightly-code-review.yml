@@ -133,9 +133,9 @@ jobs:
           PROTECTED_PATTERNS=(
             ".github/"
             ".env"
-            "ods/installers/"
-            "ods/ods-cli"
-            "ods/config/"
+            "yuyinods/installers/"
+            "yuyinods/yuyinods-cli"
+            "yuyinods/config/"
           )
 
           for file in $MODIFIED; do

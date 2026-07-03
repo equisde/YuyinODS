@@ -1,6 +1,6 @@
 <div align="center">
 
-# ODS
+# YuyinODS
 
 **Osmantic Deployment System**
 
@@ -10,8 +10,8 @@ AI server and homelab setup is rapidly becoming a solved problem.
 It should feel that way for everyone.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/Light-Heart-Labs/ODS)](https://github.com/Light-Heart-Labs/ODS/stargazers)
-[![Release](https://img.shields.io/github/v/release/Light-Heart-Labs/ODS)](https://github.com/Light-Heart-Labs/ODS/releases)
+[![GitHub Stars](https://img.shields.io/github/stars/equisde/YuyinODS)](https://github.com/equisde/YuyinODS/stargazers)
+[![Release](https://img.shields.io/github/v/release/equisde/YuyinODS)](https://github.com/equisde/YuyinODS/releases)
 
 [![Watch the demo](https://img.shields.io/badge/Demo-Watch%20on%20YouTube-red?logo=youtube)](https://youtu.be/nO8xFNHX-HA)
 
@@ -19,7 +19,7 @@ It should feel that way for everyone.
 
 ---
 
-ODS installs and wires together everything you need to run AI locally, so you do not have to assemble Ollama, Open WebUI, n8n, ComfyUI, and privacy tools by hand:
+YuyinODS installs and wires together everything you need to run AI locally, so you do not have to assemble Ollama, Open WebUI, n8n, ComfyUI, and privacy tools by hand:
 
 - **Local model inference** — run open models on your own hardware
 - **ChatGPT-style web UI** — talk to your models from any browser
@@ -34,12 +34,12 @@ No cloud required. No subscriptions required. Your prompts and data stay on your
 **Release validation:** Operational changes are checked with a release-grade
 fleet and distro lab: zero-prereq bootstrap, fresh installs, product flows,
 full-model capabilities, lifecycle recovery, and the final User Green gate. See
-[Release Validation](ods/docs/RELEASE_VALIDATION.md) for what a green
+[Release Validation](yuyinods/docs/RELEASE_VALIDATION.md) for what a green
 run proves.
 
 **Repo layout:** the repository root holds the public README, installers,
 security policy, GitHub workflows, and project coordination docs. The
-`ods/` directory is the product runtime: services, installer phases,
+`yuyinods/` directory is the product runtime: services, installer phases,
 compose overlays, dashboard, CLI, tests, and operator docs.
 
 **Stable consumption:** `v2.5.2` is the current stable release. `main` moves
@@ -47,40 +47,40 @@ quickly; use it for active development and validation candidates. For forks,
 appliances, labs, or production-like installs, pin a tagged release or audited
 commit and keep your own validation receipt. Stable patch fixes land on
 `release/2.5.x` before being merged forward. See
-[Release Channels](ods/docs/RELEASE_CHANNELS.md),
-[Installer Trust](ods/docs/INSTALLER_TRUST.md), and
-[Forkability](ods/docs/FORKABILITY.md).
+[Release Channels](yuyinods/docs/RELEASE_CHANNELS.md),
+[Installer Trust](yuyinods/docs/INSTALLER_TRUST.md), and
+[Forkability](yuyinods/docs/FORKABILITY.md).
 
 ## Get Started
 
 Linux and macOS:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Light-Heart-Labs/ODS/main/ods/get-ods.sh | bash
+curl -fsSL https://raw.githubusercontent.com/equisde/YuyinODS/main/yuyinods/get-yuyinods.sh | bash
 ```
 
 Prefer to inspect before running or pin a release tag? See
-[Installer Trust](ods/docs/INSTALLER_TRUST.md).
+[Installer Trust](yuyinods/docs/INSTALLER_TRUST.md).
 
-Windows users should use the PowerShell installer shown below or follow the [Windows Quickstart](ods/docs/WINDOWS-QUICKSTART.md).
+Windows users should use the PowerShell installer shown below or follow the [Windows Quickstart](yuyinods/docs/WINDOWS-QUICKSTART.md).
 
 After install, open **http://localhost:3000** and start chatting.
 
 > **API endpoint:** Linux Docker installs expose llama-server on **http://localhost:11434** by default (`OLLAMA_PORT`) while containers use `llama-server:8080`. macOS native Metal and Windows native/Lemonade paths use **http://localhost:8080** unless overridden. Open WebUI stays on **http://localhost:3000**.
 
-> **No GPU?** ODS also runs in cloud mode — same full stack, powered by OpenAI/Anthropic/Together APIs instead of local inference:
+> **No GPU?** YuyinODS also runs in cloud mode — same full stack, powered by OpenAI/Anthropic/Together APIs instead of local inference:
 > ```bash
 > ./install.sh --cloud
 > ```
 
-> **Port conflicts?** Every port is configurable via environment variables. See [`.env.example`](ods/.env.example) for the full list, or override at install time:
+> **Port conflicts?** Every port is configurable via environment variables. See [`.env.example`](yuyinods/.env.example) for the full list, or override at install time:
 > ```bash
 > WEBUI_PORT=9090 ./install.sh
 > ```
 
-![ODS Dashboard](ods/docs/images/dashboard.png)
+![YuyinODS Dashboard](yuyinods/docs/images/dashboard.png)
 
-**New here?** Read the [Friendly Guide](ods/docs/HOW-ODS-SERVER-WORKS.md) or [listen to the audio version](https://open.spotify.com/episode/40MvqJ41bC8cEgvUyOyE3K) — a complete walkthrough of what ODS is, how it works, and how to make it your own. No technical background needed.
+**New here?** Read the [Friendly Guide](yuyinods/docs/HOW-YuyinODS-SERVER-WORKS.md) or [listen to the audio version](https://open.spotify.com/episode/40MvqJ41bC8cEgvUyOyE3K) — a complete walkthrough of what YuyinODS is, how it works, and how to make it your own. No technical background needed.
 
 ---
 
@@ -94,7 +94,7 @@ After install, open **http://localhost:3000** and start chatting.
 | **What does it run on?** | Linux, Windows with WSL2/Docker Desktop, and macOS Apple Silicon. |
 | **Is cloud required?** | No. Local mode is the default; cloud and hybrid API modes are optional. |
 
-| If you know... | ODS adds... |
+| If you know... | YuyinODS adds... |
 |----------------|----------------------|
 | **Ollama / llama.cpp** | The surrounding server stack: chat, dashboard, voice, RAG, workflows, agents, privacy, and service management. |
 | **Open WebUI** | A full installer and control plane around Open WebUI, plus pre-wired local services. |
@@ -111,25 +111,25 @@ After install, open **http://localhost:3000** and start chatting.
 > | **Windows** (NVIDIA + AMD) | **Supported** — install and run today |
 > | **macOS** (Apple Silicon) | **Supported** — install and run today |
 >
-> **Tested Linux distros:** Ubuntu 24.04/22.04, Debian 12, Linux Mint 21.3, Fedora 41+, Rocky Linux 9, Arch Linux, Manjaro, CachyOS, and openSUSE Tumbleweed. Other distros using apt, dnf, pacman, or zypper should also work — [open an issue](https://github.com/Light-Heart-Labs/ODS/issues) if yours doesn't.
+> **Tested Linux distros:** Ubuntu 24.04/22.04, Debian 12, Linux Mint 21.3, Fedora 41+, Rocky Linux 9, Arch Linux, Manjaro, CachyOS, and openSUSE Tumbleweed. Other distros using apt, dnf, pacman, or zypper should also work — [open an issue](https://github.com/equisde/YuyinODS/issues) if yours doesn't.
 >
 > **Release validation:** Operational changes run through a release-grade gate
 > that covers zero-prereq bootstrap, clean installs, product behavior,
 > full-model capabilities, lifecycle recovery, and User Green. See
-> [Release Validation](ods/docs/RELEASE_VALIDATION.md) and the
-> [Validation Matrix](ods/docs/VALIDATION-MATRIX.md).
+> [Release Validation](yuyinods/docs/RELEASE_VALIDATION.md) and the
+> [Validation Matrix](yuyinods/docs/VALIDATION-MATRIX.md).
 >
 > **Windows:** Requires Docker Desktop with WSL2 backend. NVIDIA GPUs use Docker GPU passthrough; AMD Strix Halo runs through the platform-specific accelerated path documented in the Windows installer and support matrix.
 >
 > **macOS:** Requires Apple Silicon (M1+) and Docker Desktop. llama-server runs natively with Metal GPU acceleration; all other services run in Docker.
 >
-> See the [Support Matrix](ods/docs/SUPPORT-MATRIX.md) for supported
-> platform claims and the [Validation Matrix](ods/docs/VALIDATION-MATRIX.md)
+> See the [Support Matrix](yuyinods/docs/SUPPORT-MATRIX.md) for supported
+> platform claims and the [Validation Matrix](yuyinods/docs/VALIDATION-MATRIX.md)
 > for the layered test surface used to test those claims.
 
 ---
 
-## Why ODS?
+## Why YuyinODS?
 
 A handful of companies control the vast majority of global AI traffic — and with it, your data, your costs, and your uptime. Every query you send to a centralized provider is business intelligence you don’t own, running on infrastructure you don’t control, priced on terms you can’t negotiate.
 
@@ -137,7 +137,7 @@ If AI is becoming critical infrastructure, it shouldn’t be rented. Self-hostin
 
 Because running your own AI shouldn't require a CS degree and a weekend of debugging CUDA drivers. Right now, setting up local AI means stitching together a dozen projects, writing Docker configs from scratch, and praying everything talks to each other. Most people give up and go back to paying OpenAI.
 
-We built ODS so you don't have to.
+We built YuyinODS so you don't have to.
 
 - **One command** — detects your GPU, picks the right model, generates credentials, launches everything
 - **Chatting in under 2 minutes** — bootstrap mode gives you a working model instantly while your full model downloads in the background
@@ -146,9 +146,9 @@ We built ODS so you don't have to.
 
 <div align="center">
 
-![ODS Installer](ods/docs/images/installer-splash.gif)
+![YuyinODS Installer](yuyinods/docs/images/installer-splash.gif)
 
-*The ODSGATE installer handles everything — GPU detection, model selection, service orchestration.*
+*The YuyinODS installer handles everything — GPU detection, model selection, service orchestration.*
 
 </div>
 
@@ -156,8 +156,8 @@ We built ODS so you don't have to.
 <summary><b>Manual install (Linux)</b></summary>
 
 ```bash
-git clone https://github.com/Light-Heart-Labs/ODS.git
-cd ODS/ods
+git clone https://github.com/equisde/YuyinODS.git
+cd YuyinODS/yuyinods
 ./install.sh
 ```
 
@@ -173,15 +173,15 @@ Open a normal **PowerShell** session and run:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-git clone https://github.com/Light-Heart-Labs/ODS.git
-cd ODS
+git clone https://github.com/equisde/YuyinODS.git
+cd YuyinODS
 .\install.ps1
 ```
 
 > The `Set-ExecutionPolicy` command allows the installer script to run in the current session. It does not change your system-wide policy.
 > Running as Administrator is not recommended for the installer because user-level paths such as `.opencode`, `data/`, and `.env` can be created with admin-owned permissions.
 
-The installer detects your GPU, picks the right model, generates credentials, starts all services, and creates a Desktop shortcut to the Dashboard. Manage with `.\ods\installers\windows\ods.ps1 status`.
+The installer detects your GPU, picks the right model, generates credentials, starts all services, and creates a Desktop shortcut to the Dashboard. Manage with `.\yuyinods\installers\windows\yuyinods.ps1 status`.
 
 </details>
 
@@ -192,14 +192,14 @@ Requires Apple Silicon (M1+) and [Docker Desktop](https://www.docker.com/product
 **Install Docker Desktop first and make sure it is running before you start.**
 
 ```bash
-git clone https://github.com/Light-Heart-Labs/ODS.git
-cd ODS/ods
+git clone https://github.com/equisde/YuyinODS.git
+cd YuyinODS/yuyinods
 ./install.sh
 ```
 
-The installer detects your chip, picks the right model for your unified memory, launches llama-server natively with Metal acceleration, and starts all other services in Docker. Manage with `./ods-macos.sh status`.
+The installer detects your chip, picks the right model for your unified memory, launches llama-server natively with Metal acceleration, and starts all other services in Docker. Manage with `./yuyinods-macos.sh status`.
 
-See the [macOS Quickstart](ods/docs/MACOS-QUICKSTART.md) for details.
+See the [macOS Quickstart](yuyinods/docs/MACOS-QUICKSTART.md) for details.
 
 </details>
 
@@ -245,7 +245,7 @@ See the [macOS Quickstart](ods/docs/MACOS-QUICKSTART.md) for details.
 
 ## Hardware Auto-Detection
 
-The installer detects your GPU and first assigns a deterministic hardware tier. Linux and macOS then run the versioned catalog selector (`ods/scripts/select-model.py`), while Windows uses the PowerShell catalog selector in `ods/installers/windows/lib/tier-map.ps1`; both read `ods/config/model-library.json` to choose the best installable GGUF for the detected memory envelope. The final choice is written to `.env` as `LLM_MODEL`, `GGUF_FILE`, `MAX_CONTEXT`, and `MODEL_RECOMMENDATION_*`.
+The installer detects your GPU and first assigns a deterministic hardware tier. Linux and macOS then run the versioned catalog selector (`yuyinods/scripts/select-model.py`), while Windows uses the PowerShell catalog selector in `yuyinods/installers/windows/lib/tier-map.ps1`; both read `yuyinods/config/model-library.json` to choose the best installable GGUF for the detected memory envelope. The final choice is written to `.env` as `LLM_MODEL`, `GGUF_FILE`, `MAX_CONTEXT`, and `MODEL_RECOMMENDATION_*`.
 
 `MODEL_PROFILE=qwen` is the default non-Gemma catalog profile, so the effective pick can be Qwen, Phi, or DeepSeek depending on what fits best. `MODEL_PROFILE=gemma4` forces Gemma 4 where available, and `MODEL_PROFILE=auto` uses Gemma 4 on NVIDIA, Apple Silicon, and Intel Arc tiers. Override tier selection with `./install.sh --tier 3`; override the model family with `MODEL_PROFILE=gemma4 ./install.sh` or `MODEL_PROFILE=auto ./install.sh`.
 
@@ -297,7 +297,7 @@ Gemma 4 profile tiers remain in the installer tier maps: E2B on entry hardware, 
 
 ## Bootstrap Mode
 
-No waiting for large downloads. ODS uses bootstrap mode by default:
+No waiting for large downloads. YuyinODS uses bootstrap mode by default:
 
 1. Downloads a tiny 1.5B model in under a minute
 2. You start chatting immediately
@@ -306,13 +306,13 @@ No waiting for large downloads. ODS uses bootstrap mode by default:
 
 <div align="center">
 
-![Installer downloading modules](ods/docs/images/installer-download.png)
+![Installer downloading modules](yuyinods/docs/images/installer-download.png)
 
 *The installer pulls all services in parallel. Downloads are resume-capable — interrupted downloads pick up where they left off.*
 
 </div>
 
-The bootstrap model starts with a 64K context window so Hermes can work during the first session. After the background download finishes, ODS swaps to the full model and restores the Hermes/full-model context target.
+The bootstrap model starts with a 64K context window so Hermes can work during the first session. After the background download finishes, YuyinODS swaps to the full model and restores the Hermes/full-model context target.
 
 Skip bootstrap: `./install.sh --no-bootstrap`
 
@@ -350,13 +350,13 @@ Or restart the container directly from the installed `ods` directory:
 docker compose restart llama-server
 ```
 
-Rollback is automatic — if a new model fails to load, ODS reverts to your previous model.
+Rollback is automatic — if a new model fails to load, YuyinODS reverts to your previous model.
 
 ---
 
 ## Extensibility
 
-ODS is designed to be modded. Every service is an extension — a folder with a `manifest.yaml` and a `compose.yaml`. The dashboard, CLI, health checks, and compose stack all discover extensions automatically.
+YuyinODS is designed to be modded. Every service is an extension — a folder with a `manifest.yaml` and a `compose.yaml`. The dashboard, CLI, health checks, and compose stack all discover extensions automatically.
 
 ```
 extensions/services/
@@ -373,11 +373,11 @@ ods list                  # See everything
 
 The installer itself is modular — 19 library modules, a shared service registry, and 13 ordered phases. Want to add a hardware tier, swap a default model, or skip a phase? Start with the installer architecture map so you update the Linux, macOS, Windows, upgrade, and host-agent writers together.
 
-[Full extension guide](ods/docs/EXTENSIONS.md) | [Installer architecture](ods/docs/INSTALLER-ARCHITECTURE.md)
+[Full extension guide](yuyinods/docs/EXTENSIONS.md) | [Installer architecture](yuyinods/docs/INSTALLER-ARCHITECTURE.md)
 
 ---
 
-## ods-cli
+## yuyinods-cli
 
 The `ods` CLI manages your entire stack:
 
@@ -405,9 +405,9 @@ ods preset load gaming    # Restore it
 
 ## How It Compares
 
-Other tools get you part of the way. ODS gets you the whole way.
+Other tools get you part of the way. YuyinODS gets you the whole way.
 
-| | ODS | Ollama + Open WebUI | LocalAI |
+| | YuyinODS | Ollama + Open WebUI | LocalAI |
 |---|:---:|:---:|:---:|
 | **Scope** | Full AI stack — inference to agents to workflows | LLM + chat | LLM only |
 | One-command install | Everything, auto-configured | LLM + chat only | LLM only |
@@ -427,36 +427,36 @@ Other tools get you part of the way. ODS gets you the whole way.
 
 | | |
 |---|---|
-| [Quickstart](ods/QUICKSTART.md) | Step-by-step install guide with troubleshooting |
-| [Docs Index](ods/docs/README.md) | Maintained map for operators, contributors, and reviewers |
-| [Build On ODS](ods/docs/BUILD-ON-ODS-SERVER.md) | Forking, custom editions, extension templates, and downstream validation |
-| [Forkability](ods/docs/FORKABILITY.md) | How to fork, audit, customize, and independently operate ODS |
-| [Maintainer Runbook](ods/docs/MAINTAINER_RUNBOOK.md) | Release, rollback, validation, and operator continuity guidance for maintainers and forks |
-| [High-Risk Change Map](ods/docs/HIGH_RISK_CHANGE_MAP.md) | Which changes require focused checks, fleet validation, or release-grade gates |
-| [Headless Setup](ods/docs/HEADLESS-SETUP.md) | QR onboarding, first-boot setup, AP mode, mDNS, and local agent access |
-| [Support Matrix](ods/docs/SUPPORT-MATRIX.md) | Current platform and GPU support status |
-| [Release Validation](ods/docs/RELEASE_VALIDATION.md) | User Green gates and the release-grade fleet/distro validation policy |
-| [Validation Matrix](ods/docs/VALIDATION-MATRIX.md) | Sanitized CI, distro lab, and real-hardware fleet release-readiness evidence |
-| [Validation Reproducibility](ods/docs/VALIDATION_REPRODUCIBILITY.md) | How forks and operators can reproduce the validation story on their own hardware |
-| [Offline And Mirroring](ods/docs/OFFLINE_AND_MIRRORING.md) | Pinning, mirroring, and preserving release artifacts for independent operation |
-| [Installer Trust](ods/docs/INSTALLER_TRUST.md) | Inspect-first install paths, ref pinning, and current provenance limits |
-| [Model Management](ods/docs/MODEL-MANAGEMENT.md) | Dashboard model downloads, switching, and manual GGUF workflows |
-| [Hardware Guide](ods/docs/HARDWARE-GUIDE.md) | What to buy, tier recommendations |
-| [FAQ](ods/FAQ.md) | Common questions and configuration |
-| [Extensions](ods/docs/EXTENSIONS.md) | How to add custom services |
-| [Installer Architecture](ods/docs/INSTALLER-ARCHITECTURE.md) | Modular installer deep dive |
-| [Installer Phase Contracts](ods/docs/INSTALLER_PHASE_CONTRACTS.md) | Phase ownership, idempotency, failure modes, and validation expectations |
-| [Compose Resolver Contracts](ods/docs/COMPOSE_RESOLVER_CONTRACTS.md) | Rules for compose layers, extensions, backends, ports, and mode overlays |
-| [Changelog](ods/CHANGELOG.md) | Version history and release notes |
+| [Quickstart](yuyinods/QUICKSTART.md) | Step-by-step install guide with troubleshooting |
+| [Docs Index](yuyinods/docs/README.md) | Maintained map for operators, contributors, and reviewers |
+| [Build On YuyinODS](yuyinods/docs/BUILD-ON-YuyinODS-SERVER.md) | Forking, custom editions, extension templates, and downstream validation |
+| [Forkability](yuyinods/docs/FORKABILITY.md) | How to fork, audit, customize, and independently operate YuyinODS |
+| [Maintainer Runbook](yuyinods/docs/MAINTAINER_RUNBOOK.md) | Release, rollback, validation, and operator continuity guidance for maintainers and forks |
+| [High-Risk Change Map](yuyinods/docs/HIGH_RISK_CHANGE_MAP.md) | Which changes require focused checks, fleet validation, or release-grade gates |
+| [Headless Setup](yuyinods/docs/HEADLESS-SETUP.md) | QR onboarding, first-boot setup, AP mode, mDNS, and local agent access |
+| [Support Matrix](yuyinods/docs/SUPPORT-MATRIX.md) | Current platform and GPU support status |
+| [Release Validation](yuyinods/docs/RELEASE_VALIDATION.md) | User Green gates and the release-grade fleet/distro validation policy |
+| [Validation Matrix](yuyinods/docs/VALIDATION-MATRIX.md) | Sanitized CI, distro lab, and real-hardware fleet release-readiness evidence |
+| [Validation Reproducibility](yuyinods/docs/VALIDATION_REPRODUCIBILITY.md) | How forks and operators can reproduce the validation story on their own hardware |
+| [Offline And Mirroring](yuyinods/docs/OFFLINE_AND_MIRRORING.md) | Pinning, mirroring, and preserving release artifacts for independent operation |
+| [Installer Trust](yuyinods/docs/INSTALLER_TRUST.md) | Inspect-first install paths, ref pinning, and current provenance limits |
+| [Model Management](yuyinods/docs/MODEL-MANAGEMENT.md) | Dashboard model downloads, switching, and manual GGUF workflows |
+| [Hardware Guide](yuyinods/docs/HARDWARE-GUIDE.md) | What to buy, tier recommendations |
+| [FAQ](yuyinods/FAQ.md) | Common questions and configuration |
+| [Extensions](yuyinods/docs/EXTENSIONS.md) | How to add custom services |
+| [Installer Architecture](yuyinods/docs/INSTALLER-ARCHITECTURE.md) | Modular installer deep dive |
+| [Installer Phase Contracts](yuyinods/docs/INSTALLER_PHASE_CONTRACTS.md) | Phase ownership, idempotency, failure modes, and validation expectations |
+| [Compose Resolver Contracts](yuyinods/docs/COMPOSE_RESOLVER_CONTRACTS.md) | Rules for compose layers, extensions, backends, ports, and mode overlays |
+| [Changelog](yuyinods/CHANGELOG.md) | Version history and release notes |
 | [Contributing](CONTRIBUTING.md) | How to contribute |
 
 ---
 
 ## Contributors And Recognition
 
-ODS is built by a growing group of contributors across installers, GPU support, dashboard, security, extensions, docs, and release validation. The README keeps the product overview focused; the long-form credits, upstream acknowledgements, and contributor history live in [CONTRIBUTORS.md](CONTRIBUTORS.md).
+YuyinODS is built by a growing group of contributors across installers, GPU support, dashboard, security, extensions, docs, and release validation. The README keeps the product overview focused; the long-form credits, upstream acknowledgements, and contributor history live in [CONTRIBUTORS.md](CONTRIBUTORS.md).
 
-ODS has been recognized by the local AI and developer community, including AMD Featured Developer recognition, selection as a May 2026 AMD Lemonade Developer Challenge winner, and a feature at [(Co)nnect: Philly's AI Ecosystem Summit](https://luma.com/xdwih64h) at Pennovation Works.
+YuyinODS has been recognized by the local AI and developer community, including AMD Featured Developer recognition, selection as a May 2026 AMD Lemonade Developer Challenge winner, and a feature at [(Co)nnect: Philly's AI Ecosystem Summit](https://luma.com/xdwih64h) at Pennovation Works.
 
 ---
 
@@ -468,6 +468,6 @@ Apache 2.0 — Use it, modify it, ship it. See [LICENSE](LICENSE).
 
 <div align="center">
 
-*Built by [Light Heart Labs](https://github.com/Light-Heart-Labs) and the growing resistance that refuses to rent what should be owned.*
+*Built by [equisde](https://github.com/equisde) and the growing resistance that refuses to rent what should be owned.*
 
 </div>

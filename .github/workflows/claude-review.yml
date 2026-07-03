@@ -169,10 +169,10 @@ jobs:
         id: check
         run: |
           HIGH_STAKES_PATTERNS=(
-            "ods/installers/"
-            "ods/ods-cli"
-            "ods/config/"
-            "ods/extensions/services/dashboard-api/security.py"
+            "yuyinods/installers/"
+            "yuyinods/yuyinods-cli"
+            "yuyinods/config/"
+            "yuyinods/extensions/services/dashboard-api/security.py"
             ".github/workflows/"
             ".env"
             "docker-compose"
@@ -274,9 +274,9 @@ jobs:
           BLOCKED_PATTERNS=(
             ".github/workflows/"
             ".github/actions/"
-            "ods/installers/"
-            "ods/ods-cli"
-            "ods/config/"
+            "yuyinods/installers/"
+            "yuyinods/yuyinods-cli"
+            "yuyinods/config/"
             "\.env"
             "\.env\."
             "\.key$"
@@ -476,9 +476,9 @@ jobs:
 
             **Security Policy**: Automated patch generation is disabled for:
             - Workflow files (.github/workflows/*)
-            - Installer code (ods/installers/*)
-            - CLI tool (ods/ods-cli)
-            - Configuration files (ods/config/*)
+            - Installer code (yuyinods/installers/*)
+            - CLI tool (yuyinods/yuyinods-cli)
+            - Configuration files (yuyinods/config/*)
             - Secrets and credentials
             - PRs from forks
 
