@@ -999,16 +999,20 @@ MODELS_INI_EOF
     _phase11_allow_external_lemonade_firewall yuyinods-network
 
     _compose_started_with_delayed_health=false
-    if ! $compose_ok && _phase11_compose_failure_is_delayed_health && _phase11_has_managed_containers; then
+    if ! $compose_ok && _phase11_has_managed_containers; then
         # docker compose treats `depends_on: condition: service_healthy` as a
         # hard failure when a dependency is still cold-loading at the end of its
-        # healthcheck window. Large GGUFs can legitimately cross that window on
-        # reinstall/upgrade, while the containers are already created and phase
-        # 12 has the long adaptive health wait. Other compose failures still
-        # take the fatal path below.
-        _compose_started_with_delayed_health=true
-        COMPOSE_STARTED_WITH_DELAYED_HEALTH=true
-        compose_ok=true
+        # healthcheck window. Large GGUFs, Langfuse Postgres migrations, and
+        # dashboard-api cold starts can legitimately cross that window while
+        # the containers are already created. Phase 12 has the long adaptive
+        # health wait, so continue there instead of failing on a stale compose
+        # exit code.
+        if _phase11_compose_failure_is_delayed_health || \
+            grep -Eiq 'dependency failed to start: container yuyinods-[a-z0-9-]+ is unhealthy' "$LOG_FILE" 2>/dev/null; then
+            _compose_started_with_delayed_health=true
+            COMPOSE_STARTED_WITH_DELAYED_HEALTH=true
+            compose_ok=true
+        fi
     fi
 
     if $compose_ok; then

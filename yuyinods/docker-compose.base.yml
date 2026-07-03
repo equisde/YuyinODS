@@ -273,9 +273,9 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:3002/health"]
       interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+      timeout: 15s
+      retries: 6
+      start_period: 45s
 
   # ============================================
   # Dashboard UI (Control Center)
