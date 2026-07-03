@@ -35,6 +35,19 @@ _phase06_step() {
     log "Phase 06 step: ${step}"
 }
 
+_phase06_mkdir_user_writable() {
+    local path
+    for path in "$@"; do
+        [[ -n "$path" ]] || continue
+        if ! mkdir -p "$path" 2>>"$LOG_FILE"; then
+            ods_sudo mkdir -p "$path" 2>>"$LOG_FILE" || \
+                error "Unable to create required directory: $path"
+            ods_sudo chown "$(id -u):$(id -g)" "$path" 2>>"$LOG_FILE" || \
+                warn "Could not set ownership on $path; later install steps may need sudo"
+        fi
+    done
+}
+
 if $DRY_RUN; then
     log "[DRY RUN] Would create: $INSTALL_DIR/{config,data} plus ${YUYINODS_MODELS_DIR:-$INSTALL_DIR/data/models}, ${YUYINODS_DOCKER_ROOT:-$INSTALL_DIR/data}, ${YUYINODS_TEMP_DIR:-/tmp}"
     log "[DRY RUN] Would copy compose files ($COMPOSE_FLAGS) and source tree"
@@ -55,12 +68,32 @@ else
     # Create directories
     _phase06_step "create-directories"
     ods_progress 38 "directories" "Creating directory structure"
-    mkdir -p "$INSTALL_DIR"/{config,data}
-    mkdir -p "$YUYINODS_MODELS_DIR" "$YUYINODS_TEMP_DIR" "$YUYINODS_DATA_DIR"
-    mkdir -p "$YUYINODS_DATA_DIR"/{open-webui,whisper,tts,n8n,qdrant,privacy-shield,ape,token-spy,hermes,persona}
-    mkdir -p "$YUYINODS_DATA_DIR"/hermes-proxy/{caddy-data,caddy-config}
-    mkdir -p "$YUYINODS_DATA_DIR"/langfuse/{postgres,clickhouse,redis,minio}
-    mkdir -p "$INSTALL_DIR"/config/{n8n,litellm,openclaw,searxng}
+    _phase06_mkdir_user_writable \
+        "$INSTALL_DIR/config" \
+        "$INSTALL_DIR/data" \
+        "$YUYINODS_MODELS_DIR" \
+        "$YUYINODS_TEMP_DIR" \
+        "$YUYINODS_DATA_DIR" \
+        "$YUYINODS_DATA_DIR/open-webui" \
+        "$YUYINODS_DATA_DIR/whisper" \
+        "$YUYINODS_DATA_DIR/tts" \
+        "$YUYINODS_DATA_DIR/n8n" \
+        "$YUYINODS_DATA_DIR/qdrant" \
+        "$YUYINODS_DATA_DIR/privacy-shield" \
+        "$YUYINODS_DATA_DIR/ape" \
+        "$YUYINODS_DATA_DIR/token-spy" \
+        "$YUYINODS_DATA_DIR/hermes" \
+        "$YUYINODS_DATA_DIR/persona" \
+        "$YUYINODS_DATA_DIR/hermes-proxy/caddy-data" \
+        "$YUYINODS_DATA_DIR/hermes-proxy/caddy-config" \
+        "$YUYINODS_DATA_DIR/langfuse/postgres" \
+        "$YUYINODS_DATA_DIR/langfuse/clickhouse" \
+        "$YUYINODS_DATA_DIR/langfuse/redis" \
+        "$YUYINODS_DATA_DIR/langfuse/minio" \
+        "$INSTALL_DIR/config/n8n" \
+        "$INSTALL_DIR/config/litellm" \
+        "$INSTALL_DIR/config/openclaw" \
+        "$INSTALL_DIR/config/searxng"
     if [[ "$YUYINODS_DATA_DIR" != "$INSTALL_DIR/data" ]]; then
         rmdir "$INSTALL_DIR/data" 2>/dev/null || true
         ln -sfn "$YUYINODS_DATA_DIR" "$INSTALL_DIR/data"

@@ -341,6 +341,26 @@ else
         grep -Eiq 'dependency failed to start: container yuyinods-(llama-server|llama-ready|llama-server-ready) is unhealthy' "$log_path"
     }
 
+    _phase11_resolve_service_image_build() {
+        local svc="$1"
+        _phase11_compose "${COMPOSE_FLAGS_ARR[@]}" config --format json 2>/dev/null \
+            | python3 -c "
+import json, sys
+svc_name = sys.argv[1]
+try:
+    d = json.load(sys.stdin)
+    svc = d.get('services', {}).get(svc_name, {})
+    image = svc.get('image', '') or ''
+    has_build = svc.get('build') is not None
+    if not image and has_build:
+        project = d.get('name') or 'yuyinods'
+        image = f'{project}-{svc_name}'
+    print(f'{image}\t{str(has_build).lower()}')
+except Exception:
+    print('\tfalse')
+" "$svc" 2>/dev/null || printf '\tfalse\n'
+    }
+
     # Cloud/external Lemonade modes skip YuyinODS-managed GGUF downloads and
     # auto-enable LiteLLM because it is the routing surface for both paths.
     if [[ "${YUYINODS_MODE:-local}" == "cloud" ]]; then
@@ -799,8 +819,31 @@ MODELS_INI_EOF
     # name (matches yuyinods-cli's service id) that will be excluded below.
     _failed_build_services=()
     for _svc in "${_build_services[@]}"; do
+        _resolved_record="$(_phase11_resolve_service_image_build "$_svc")"
+        _resolved_image="${_resolved_record%%$'\t'*}"
+        _has_build="${_resolved_record##*$'\t'}"
+
+        if [[ "$_has_build" != "true" ]]; then
+            if [[ -n "$_resolved_image" ]] && $DOCKER_CMD image inspect "$_resolved_image" &>/dev/null; then
+                printf "\r  ${BGRN}✓${NC} %-60s\n" "$_svc image already present"
+            else
+                log "Skipping local image build for external-image service: $_svc (${_resolved_image:-image resolved by compose})"
+            fi
+            continue
+        fi
+
+        if [[ "${YUYINODS_FORCE_REBUILD:-false}" != "true" && -n "$_resolved_image" ]] && \
+            $DOCKER_CMD image inspect "$_resolved_image" &>/dev/null; then
+            printf "\r  ${BGRN}✓${NC} %-60s\n" "$_svc image already built"
+            continue
+        fi
+
         _build_count=$((_build_count + 1))
-        _phase11_compose "${COMPOSE_FLAGS_ARR[@]}" build --no-cache "$_svc" >> "$LOG_FILE" 2>&1 &
+        if [[ "${YUYINODS_FORCE_REBUILD:-false}" == "true" ]]; then
+            _phase11_compose "${COMPOSE_FLAGS_ARR[@]}" build --no-cache "$_svc" >> "$LOG_FILE" 2>&1 &
+        else
+            _phase11_compose "${COMPOSE_FLAGS_ARR[@]}" build "$_svc" >> "$LOG_FILE" 2>&1 &
+        fi
         _build_pid=$!
         _build_failed=false
         spin_task $_build_pid "[$_build_count/$_build_total] Building $_svc" || _build_failed=true
@@ -809,21 +852,6 @@ MODELS_INI_EOF
         # buildx bugs, disk-full mid-export) and a "failed" build can
         # still leave a usable cached image (idempotent re-run). Inspect
         # the resolved image tag rather than trusting the exit code alone.
-        _resolved_image=$(_phase11_compose "${COMPOSE_FLAGS_ARR[@]}" config --format json 2>/dev/null \
-            | python3 -c "
-import json, sys
-try:
-    d = json.load(sys.stdin)
-    svc_name = '$_svc'
-    svc = d.get('services', {}).get(svc_name, {})
-    image = svc.get('image', '') or ''
-    if not image and svc.get('build') is not None:
-        project = d.get('name') or 'ods'
-        image = f'{project}-{svc_name}'
-    print(image)
-except Exception:
-    pass
-" 2>/dev/null || echo "")
         if [[ -n "$_resolved_image" ]] && ! $DOCKER_CMD image inspect "$_resolved_image" &>/dev/null; then
             _build_failed=true
         fi
