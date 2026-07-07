@@ -208,6 +208,17 @@ check_port_conflict() {
     return 1
 }
 
+find_free_port() {
+    local start="$1" end="${2:-$((start + 20))}" candidate
+    for ((candidate=start; candidate<=end; candidate++)); do
+        if ! check_port_conflict "$candidate"; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
+    return 1
+}
+
 # Ollama conflict detection
 check_ollama_conflict() {
     OLLAMA_RUNNING=false
@@ -262,8 +273,20 @@ if [[ "${ENABLE_VOICE:-false}" == "true" ]] && _phase04_lemonade_uses_host_9000;
     unset _whisper_port_for_check
 fi
 
+_litellm_port_for_check="${LITELLM_PORT:-${SERVICE_PORTS[litellm]:-4000}}"
+if [[ "$_litellm_port_for_check" =~ ^[0-9]+$ ]] && check_port_conflict "$_litellm_port_for_check"; then
+    _litellm_free_port="$(find_free_port 4001 4020 || true)"
+    if [[ -n "$_litellm_free_port" ]]; then
+        warn "Port $_litellm_port_for_check is in use by ${PORT_CONFLICT_PROC:-unknown}; using host LiteLLM port $_litellm_free_port"
+        LITELLM_PORT="$_litellm_free_port"
+        SERVICE_PORTS[litellm]="$_litellm_free_port"
+    fi
+fi
+unset _litellm_port_for_check _litellm_free_port
+
 # Port conflict detection with detailed process information
 PORTS_TO_CHECK="${SERVICE_PORTS[llama-server]:-8080} ${SERVICE_PORTS[open-webui]:-3000}"
+PORTS_TO_CHECK="$PORTS_TO_CHECK ${LITELLM_PORT:-${SERVICE_PORTS[litellm]:-4000}}"
 [[ "$ENABLE_VOICE" == "true" ]] && PORTS_TO_CHECK="$PORTS_TO_CHECK ${SERVICE_PORTS[whisper]:-9000} ${SERVICE_PORTS[tts]:-8880}"
 [[ "$ENABLE_WORKFLOWS" == "true" ]] && PORTS_TO_CHECK="$PORTS_TO_CHECK ${SERVICE_PORTS[n8n]:-5678}"
 [[ "${ENABLE_QDRANT:-${ENABLE_RAG:-false}}" == "true" ]] && PORTS_TO_CHECK="$PORTS_TO_CHECK ${SERVICE_PORTS[qdrant]:-6333}"

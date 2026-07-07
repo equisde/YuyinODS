@@ -28,9 +28,9 @@ services:
         with open('/tmp/config.yaml', 'w') as f:
             yaml.dump(cfg, f, default_flow_style=False)
         "
-          exec litellm --config /tmp/config.yaml --port 4000
+          exec litellm --config /tmp/config.yaml --host 0.0.0.0 --port 4000
         else
-          exec litellm --config /app/config.yaml --port 4000
+          exec litellm --config /app/config.yaml --host 0.0.0.0 --port 4000
         fi
     deploy:
       resources:
@@ -44,8 +44,8 @@ services:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/health/readiness', timeout=5)"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 20s
+      retries: 10
+      start_period: ${LITELLM_START_PERIOD:-300s}
     logging:
       driver: "json-file"
       options:

@@ -406,6 +406,7 @@ raise SystemExit(1)' 2>/dev/null && return 0
     N8N_PASS=$(_env_get N8N_PASS "$(openssl rand -base64 16 2>/dev/null || head -c 16 /dev/urandom | base64)")
     LITELLM_KEY=$(_env_get LITELLM_KEY "sk-yuyinods-$(openssl rand -hex 16 2>/dev/null || head -c 16 /dev/urandom | xxd -p)")
     LITELLM_LEMONADE_API_KEY=$(_env_get LITELLM_LEMONADE_API_KEY "sk-yuyinods-lemonade-$(openssl rand -hex 16 2>/dev/null || head -c 16 /dev/urandom | xxd -p)")
+    LITELLM_PORT_VALUE="${LITELLM_PORT:-$(_env_get LITELLM_PORT 4000)}"
     LEMONADE_EXTERNAL_VALUE="${LEMONADE_EXTERNAL:-false}"
     [[ "${LEMONADE_EXTERNAL_VALUE,,}" == "true" ]] && LEMONADE_EXTERNAL_VALUE="true" || LEMONADE_EXTERNAL_VALUE="false"
     if [[ "$LEMONADE_EXTERNAL_VALUE" == "true" && -n "${LEMONADE_API_KEY:-}" ]]; then
@@ -869,7 +870,7 @@ N8N_PORT=5678
 QDRANT_PORT=6333
 QDRANT_GRPC_PORT=6334
 EMBEDDINGS_PORT=8090
-LITELLM_PORT=4000
+LITELLM_PORT=${LITELLM_PORT_VALUE}
 OPENCLAW_PORT=7860
 LANGFUSE_PORT=${LANGFUSE_PORT}
 

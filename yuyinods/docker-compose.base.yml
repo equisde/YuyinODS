@@ -90,10 +90,9 @@ services:
       ENABLE_OLLAMA_API: "false"
       OPENAI_API_BASE_URL: "${LLM_API_URL:-http://llama-server:8080}/v1"
       OPENAI_API_KEY: ""
-      # PWA / branding — surfaces as the app title, page title, and PWA install name.
-      # When a user adds ODS to their home screen, this is the label they see
-      # next to the ODS icon. Defaults to "ODS"; users can override per-install.
-      WEBUI_NAME: "${WEBUI_NAME:-ODS}"
+      # PWA / branding: surfaces as the app title, page title, and PWA install name.
+      # When a user adds YuyinODS to their home screen, this is the label they see.
+      WEBUI_NAME: "${WEBUI_NAME:-YuyinODS}"
       # Public URL Open WebUI uses for share links, OAuth callbacks, and PWA
       # install metadata. This value is persistent inside Open WebUI's config
       # database (https://docs.openwebui.com/getting-started/env-configuration/#webui_url),
@@ -169,8 +168,8 @@ services:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 60s
+      retries: 10
+      start_period: ${WEBUI_START_PERIOD:-300s}
 
   # ============================================
   # Dashboard API (System Status Backend)
