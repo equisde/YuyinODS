@@ -493,6 +493,7 @@ _docker_configure_containerd_root() {
     current_real="$(readlink -f "$current" 2>/dev/null || printf '%s\n' "$current")"
 
     if [[ "$current" == "$desired" || "$current_real" == "$desired_real" ]]; then
+        _docker_prepare_containerd_root "$desired"
         log "containerd root already uses YuyinODS root-container: $current"
         return 0
     fi
@@ -511,6 +512,7 @@ _docker_configure_containerd_root() {
 
     ai "Configuring containerd root: $desired"
     ods_sudo mkdir -p /etc/containerd "$desired" 2>>"$LOG_FILE" || true
+    _docker_prepare_containerd_root "$desired"
     backup="${config}.bak.$(date +%Y%m%d%H%M%S)"
     [[ -f "$config" ]] && ods_sudo cp "$config" "$backup" 2>>"$LOG_FILE" || true
 
@@ -570,6 +572,23 @@ PY
     else
         warn "containerd config updated, but systemctl is unavailable. Restart containerd and Docker before continuing."
     fi
+}
+
+_docker_prepare_containerd_root() {
+    local root="$1"
+    [[ -n "$root" ]] || return 0
+    ods_sudo mkdir -p \
+        "$root/io.containerd.content.v1.content/blobs/sha256" \
+        "$root/io.containerd.content.v1.content/ingest" \
+        "$root/io.containerd.snapshotter.v1.overlayfs/snapshots" \
+        "$root/io.containerd.metadata.v1.bolt" \
+        2>>"$LOG_FILE" || {
+            warn "Could not initialize containerd root directories under $root"
+            return 0
+        }
+    ods_sudo chown -R root:root "$root" 2>>"$LOG_FILE" || \
+        warn "Could not set containerd root ownership to root:root: $root"
+    ods_sudo chmod -R u+rwX,go+rX "$root" 2>>"$LOG_FILE" || true
 }
 
 _docker_post_install_checks() {
