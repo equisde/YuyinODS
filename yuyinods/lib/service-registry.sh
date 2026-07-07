@@ -111,8 +111,11 @@ if not ext_dir.exists():
 # Collect service dirs from both built-in and dashboard-installed extensions
 _all_service_dirs = sorted(ext_dir.iterdir())
 user_ext_dir = ext_dir.parent.parent / "data" / "user-extensions"
-if user_ext_dir.exists():
-    _all_service_dirs += sorted(user_ext_dir.iterdir())
+try:
+    if user_ext_dir.exists():
+        _all_service_dirs += sorted(user_ext_dir.iterdir())
+except OSError as exc:
+    print(f'# WARNING: could not scan user-extensions {user_ext_dir}: {exc}', file=sys.stderr)
 
 _seen_ids = set()
 for service_dir in _all_service_dirs:

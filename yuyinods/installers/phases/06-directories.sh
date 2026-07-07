@@ -94,6 +94,11 @@ else
         "$INSTALL_DIR/config/litellm" \
         "$INSTALL_DIR/config/openclaw" \
         "$INSTALL_DIR/config/searxng"
+    if [[ "$YUYINODS_DATA_DIR" == "$YUYINODS_DOCKER_ROOT"/data* ]]; then
+        chmod o+x "$YUYINODS_DOCKER_ROOT" 2>>"$LOG_FILE" || \
+            ods_sudo chmod o+x "$YUYINODS_DOCKER_ROOT" 2>>"$LOG_FILE" || \
+            warn "Could not make Docker root traversable for install data symlink: $YUYINODS_DOCKER_ROOT"
+    fi
     if [[ "$YUYINODS_DATA_DIR" != "$INSTALL_DIR/data" ]]; then
         rmdir "$INSTALL_DIR/data" 2>/dev/null || true
         ln -sfn "$YUYINODS_DATA_DIR" "$INSTALL_DIR/data"

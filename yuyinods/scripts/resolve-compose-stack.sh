@@ -484,7 +484,12 @@ if ext_dir.exists():
 
 # Discover enabled user-installed extensions (from dashboard portal)
 user_ext_dir = script_dir / "data" / "user-extensions"
-if user_ext_dir.exists():
+try:
+    user_ext_exists = user_ext_dir.exists()
+except OSError as e:
+    print(f"WARNING: Could not access user-extensions: {e}", file=sys.stderr)
+    user_ext_exists = False
+if user_ext_exists:
     try:
         for service_dir in sorted(user_ext_dir.iterdir()):
             if not service_dir.is_dir():
