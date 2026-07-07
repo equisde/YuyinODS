@@ -63,6 +63,33 @@ fi
 [[ "$ENABLE_OPENCLAW" == "true" ]] && PULL_LIST+=("ghcr.io/openclaw/openclaw:2026.3.8|OPENCLAW — agent framework")
 [[ "${ENABLE_EMBEDDINGS:-${ENABLE_RAG:-false}}" == "true" ]] && PULL_LIST+=("ghcr.io/huggingface/text-embeddings-inference:cpu-1.9.1|TEI — embedding engine")
 
+_phase08_dedupe_pull_list() {
+    local entry img label
+    local -a deduped=()
+    local -A seen=()
+
+    for entry in "${PULL_LIST[@]}"; do
+        img="${entry%%|*}"
+        label="${entry##*|}"
+        [[ -n "$img" ]] || continue
+        if [[ -n "${seen[$img]:-}" ]]; then
+            log "Skipping duplicate image pull entry: $img ($label)"
+            continue
+        fi
+        seen[$img]=1
+        deduped+=("$entry")
+    done
+
+    PULL_LIST=("${deduped[@]}")
+}
+
+_phase08_cleanup_pull_temp() {
+    find "${YUYINODS_TEMP_DIR:-/tmp}" -maxdepth 1 -type f -name 'yuyinods-pull.*.log' -delete 2>/dev/null || true
+    find "${YUYINODS_DOCKER_TMPDIR:-${YUYINODS_TEMP_DIR:-/tmp}/docker-tmp}" -maxdepth 1 -mindepth 1 -type f -mmin +60 -delete 2>/dev/null || true
+}
+
+_phase08_dedupe_pull_list
+
 if $DRY_RUN; then
     ai "[DRY RUN] I would download ${#PULL_LIST[@]} modules."
 else
@@ -166,6 +193,7 @@ else
     pull_count=0
     pull_total=${#PULL_LIST[@]}
     pull_failed=0
+    _phase08_cleanup_pull_temp
 
     for entry in "${PULL_LIST[@]}"; do
         img="${entry%%|*}"
@@ -189,4 +217,5 @@ else
     else
         ai_warn "$pull_failed of $pull_total modules failed — services may not start fully"
     fi
+    _phase08_cleanup_pull_temp
 fi

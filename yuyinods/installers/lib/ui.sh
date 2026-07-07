@@ -196,7 +196,7 @@ spin_task() {
 
 _docker_pull_retry_delay() {
   local retry_number=$1
-  local default_delays=(5 15 30)
+  local default_delays=(10 30 60 120 240)
   local delays_raw="${YUYINODS_DOCKER_PULL_RETRY_DELAYS:-${default_delays[*]}}"
   local delays=()
   read -r -a delays <<< "$delays_raw"
@@ -235,13 +235,23 @@ pull_with_progress() {
   local label=$2
   local count=$3
   local total=$4
-  local configured_max_attempts="${YUYINODS_DOCKER_PULL_MAX_ATTEMPTS:-4}"
-  local max_attempts=4
-  local pull_timeout=3600  # 60 minutes for large images (CUDA is ~10GB)
+  local configured_max_attempts="${YUYINODS_DOCKER_PULL_MAX_ATTEMPTS:-6}"
+  local configured_pull_timeout="${YUYINODS_DOCKER_PULL_TIMEOUT:-7200}"
+  local max_attempts=6
+  local pull_timeout=7200  # Large ROCm/CUDA images can take hours on slow links.
   local pull_pid
+  local attempt_log
 
   if [[ "$configured_max_attempts" =~ ^[0-9]+$ ]] && (( configured_max_attempts >= 1 )); then
     max_attempts=$configured_max_attempts
+  fi
+  if [[ "$configured_pull_timeout" =~ ^[0-9]+$ ]] && (( configured_pull_timeout >= 300 )); then
+    pull_timeout=$configured_pull_timeout
+  fi
+
+  if $DOCKER_CMD image inspect "$img" >/dev/null 2>&1; then
+    printf "\r  ${BGRN}✓${NC} [$count/$total] %-60s\n" "$label already downloaded"
+    return 0
   fi
 
   for ((attempt = 1; attempt <= max_attempts; attempt++)); do
@@ -252,16 +262,18 @@ pull_with_progress() {
       sleep "$backoff"
     fi
 
-    local attempt_log
-    attempt_log=$(mktemp)
+    attempt_log=$(mktemp "${YUYINODS_TEMP_DIR:-/tmp}/yuyinods-pull.XXXXXX.log")
 
     # Wrap docker pull with timeout to prevent indefinite hangs
-    timeout "$pull_timeout" $DOCKER_CMD pull "$img" >"$attempt_log" 2>&1 &
+    env \
+      DOCKER_CLIENT_TIMEOUT="${YUYINODS_DOCKER_CLIENT_TIMEOUT:-7200}" \
+      COMPOSE_HTTP_TIMEOUT="${YUYINODS_COMPOSE_HTTP_TIMEOUT:-7200}" \
+      timeout "$pull_timeout" $DOCKER_CMD pull "$img" >"$attempt_log" 2>&1 &
     pull_pid=$!
 
     if spin_task "$pull_pid" "[$count/$total] $label"; then
       # Verify image was pulled successfully
-      if $DOCKER_CMD inspect "$img" >/dev/null 2>&1; then
+      if $DOCKER_CMD image inspect "$img" >/dev/null 2>&1; then
         cat "$attempt_log" >> "$LOG_FILE" 2>&1 || true
         rm -f "$attempt_log"
         printf "\r  ${BGRN}✓${NC} [$count/$total] %-60s\n" "$label"
@@ -273,7 +285,14 @@ pull_with_progress() {
         continue
       fi
     else
+      pull_rc=$?
       cat "$attempt_log" >> "$LOG_FILE" 2>&1 || true
+
+      if $DOCKER_CMD image inspect "$img" >/dev/null 2>&1; then
+        rm -f "$attempt_log"
+        printf "\r  ${BGRN}✓${NC} [$count/$total] %-60s\n" "$label already downloaded"
+        return 0
+      fi
 
       # Check for non-retryable errors
       if grep -qiE 'unauthorized|denied|not[[:space:]-]?found|\b404\b|no space left on device|cannot connect to the docker daemon|is the docker daemon running' "$attempt_log"; then
@@ -283,7 +302,7 @@ pull_with_progress() {
       fi
 
       # Check for timeout
-      if grep -qiE 'timeout|timed out' "$attempt_log" || ! kill -0 "$pull_pid" 2>/dev/null; then
+      if [[ "${pull_rc:-0}" -eq 124 ]] || grep -qiE 'timeout|timed out|net/http: TLS handshake timeout|Client.Timeout exceeded|context deadline exceeded|connection reset by peer|i/o timeout|temporary failure' "$attempt_log"; then
         rm -f "$attempt_log"
         printf "\r  ${RED}✗${NC} [$count/$total] %-60s (network timeout on attempt $attempt)\n" "$label"
         continue

@@ -260,6 +260,7 @@ else
             "TMPDIR=$docker_tmp"
             "DOCKER_TMPDIR=$docker_tmp"
             "COMPOSE_BAKE=false"
+            "COMPOSE_PARALLEL_LIMIT=${YUYINODS_COMPOSE_PARALLEL_LIMIT:-1}"
         )
         if [[ "${cmd[0]:-}" == "sudo" ]]; then
             command sudo env "${env_prefix[@]}" "${cmd[@]:1}" "$@"
