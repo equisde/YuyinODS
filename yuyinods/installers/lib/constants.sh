@@ -48,6 +48,10 @@ if ! mkdir -p "$YUYINODS_DOCKER_TMPDIR" 2>/dev/null; then
         sudo mkdir -p "$YUYINODS_DOCKER_TMPDIR" 2>/dev/null || true
     fi
 fi
+if [[ ! -d "$YUYINODS_DOCKER_TMPDIR" || ! -w "$YUYINODS_DOCKER_TMPDIR" ]]; then
+    YUYINODS_DOCKER_TMPDIR="/tmp/yuyinods-docker-tmp"
+    mkdir -p "$YUYINODS_DOCKER_TMPDIR" 2>/dev/null || true
+fi
 export YUYINODS_DOCKER_TMPDIR
 export DOCKER_TMPDIR="${DOCKER_TMPDIR:-$YUYINODS_DOCKER_TMPDIR}"
 if [[ -z "${TMPDIR:-}" || ! -d "${TMPDIR:-}" ]]; then

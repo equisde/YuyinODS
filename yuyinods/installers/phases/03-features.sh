@@ -102,6 +102,16 @@ if [[ "${ENABLE_HERMES:-false}" == "true" && "${YUYINODS_MODE:-local}" != "cloud
     fi
 fi
 
+if [[ "${ENABLE_COMFYUI:-false}" == "true" && "${GPU_BACKEND:-}" == "amd" ]]; then
+    _amd_comfy_gfx="$(echo "${GPU_TOPOLOGY_JSON:-{\}}" | jq -r '[.gpus[]?.gfx_version] | unique | .[0] // "unknown"' 2>/dev/null || echo "unknown")"
+    if [[ "$_amd_comfy_gfx" != "gfx1151" ]]; then
+        ai_warn "ComfyUI AMD image is gfx1151-only; detected ${_amd_comfy_gfx}. Image generation disabled to avoid ROCm hangs."
+        ai "Use a ComfyUI image built for ${_amd_comfy_gfx}, or keep image generation disabled on this AMD iGPU."
+        ENABLE_COMFYUI=false
+    fi
+    unset _amd_comfy_gfx
+fi
+
 # Sync optional-extension compose state with the ENABLE_* flags — the
 # resolver uses the .disabled convention to exclude services from the compose
 # stack. These mv calls are skipped during --dry-run so the source tree is
@@ -165,6 +175,7 @@ if ! $DRY_RUN; then
     if [[ "${ENABLE_HERMES:-false}" != "true" && "${ENABLE_OPENCLAW:-false}" != "true" ]]; then
         ENABLE_APE=false
     fi
+
     _sync_extension_compose "${ENABLE_RECOMMENDED:-}" litellm    "LiteLLM"       "recommended services not enabled"
     _sync_extension_compose "${ENABLE_RECOMMENDED:-}" searxng    "SearXNG"       "recommended services not enabled"
     _sync_extension_compose "${ENABLE_RECOMMENDED:-}" token-spy  "Token Spy"     "recommended services not enabled"
@@ -588,7 +599,9 @@ LLAMA_ARG_TENSOR_SPLIT=$(echo "$GPU_ASSIGNMENT_JSON" | jq -r '
   end')
 
 # Persist topology for the dashboard API (mounted read-only at /yuyinods/config)
-mkdir -p "$INSTALL_DIR/config"
-cp "$TOPOLOGY_FILE" "$INSTALL_DIR/config/gpu-topology.json"
-chmod 644 "$INSTALL_DIR/config/gpu-topology.json"
+if ! $DRY_RUN; then
+    mkdir -p "$INSTALL_DIR/config"
+    cp "$TOPOLOGY_FILE" "$INSTALL_DIR/config/gpu-topology.json"
+    chmod 644 "$INSTALL_DIR/config/gpu-topology.json"
+fi
 rm -f "$TOPOLOGY_FILE"

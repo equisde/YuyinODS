@@ -568,6 +568,11 @@ raise SystemExit(1)' 2>/dev/null && return 0
     _cpu_backend="${GPU_BACKEND:-cpu}"
     [[ "$_cpu_backend" == "none" ]] && _cpu_backend="cpu"
     read -r _llama_cpu_limit_raw _llama_cpu_reservation_raw _docker_available_cpus <<< "$(calculate_llama_cpu_budget "$_cpu_backend")"
+    _host_ram_mb="$(get_host_ram_mb)"
+    YUYINODS_BUILD_CPU_PERCENT="${YUYINODS_BUILD_CPU_PERCENT:-80}"
+    YUYINODS_BUILD_RAM_PERCENT="${YUYINODS_BUILD_RAM_PERCENT:-80}"
+    YUYINODS_COMPOSE_PARALLEL_LIMIT="${YUYINODS_COMPOSE_PARALLEL_LIMIT:-$(calculate_resource_percent "$_docker_available_cpus" "$YUYINODS_BUILD_CPU_PERCENT" 1)}"
+    YUYINODS_BUILD_MEMORY_LIMIT_MB="${YUYINODS_BUILD_MEMORY_LIMIT_MB:-$(calculate_resource_percent "$_host_ram_mb" "$YUYINODS_BUILD_RAM_PERCENT" 1024)}"
     _llama_cpu_limit_detected="${_llama_cpu_limit_raw}.0"
     _llama_cpu_reservation_detected="${_llama_cpu_reservation_raw}.0"
     LLAMA_CPU_LIMIT=$(_select_auto_cpu_value LLAMA_CPU_LIMIT "${_llama_cpu_limit_detected}")
@@ -722,6 +727,16 @@ YUYINODS_DATA_DIR=${YUYINODS_DATA_DIR}
 YUYINODS_CONFIG_DIR=${YUYINODS_CONFIG_DIR}
 YUYINODS_INSTALL_DIR=${YUYINODS_APP_DIR}
 COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-yuyinods}
+
+#=== Docker build/download performance ===
+# Defaults target 80% of CPUs/RAM so builds and pulls are fast without fully
+# starving the desktop. Override before install if you need stricter limits.
+YUYINODS_BUILD_CPU_PERCENT=${YUYINODS_BUILD_CPU_PERCENT}
+YUYINODS_BUILD_RAM_PERCENT=${YUYINODS_BUILD_RAM_PERCENT}
+YUYINODS_COMPOSE_PARALLEL_LIMIT=${YUYINODS_COMPOSE_PARALLEL_LIMIT}
+YUYINODS_BUILD_MEMORY_LIMIT_MB=${YUYINODS_BUILD_MEMORY_LIMIT_MB}
+YUYINODS_DOCKER_TMPDIR=${YUYINODS_DOCKER_TMPDIR:-${YUYINODS_TEMP_DIR}/docker-tmp}
+COMPOSE_BAKE=false
 
 #=== LLM Backend Mode ===
 YUYINODS_MODE=${YUYINODS_MODE_VALUE}

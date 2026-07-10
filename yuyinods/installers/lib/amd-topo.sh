@@ -52,11 +52,37 @@ amd_memory_type() {
 
     # GTT is the reliable unified-memory signal for AMD APUs. VRAM alone is
     # not: MI300X and future 32 GB+ discrete cards report large VRAM too.
-    if [[ $gtt_gb_int -ge 16 && $vram_gb_int -le 4 ]] || [[ $gtt_gb_int -ge 32 ]]; then
+    if [[ $gtt_gb_int -ge 4 && $vram_gb_int -le 4 ]] || [[ $gtt_gb_int -ge 32 ]]; then
         echo "unified"
     else
         echo "discrete"
     fi
+}
+
+amd_host_ram_mb() {
+    local ram_kb
+    ram_kb=$(grep MemTotal /proc/meminfo 2>/dev/null | awk '{print $2}')
+    if [[ "$ram_kb" =~ ^[0-9]+$ ]] && [[ "$ram_kb" -gt 0 ]]; then
+        echo $((ram_kb / 1024))
+    else
+        echo "0"
+    fi
+}
+
+amd_effective_memory_gb() {
+    local vram_bytes="${1:-0}" gtt_bytes="${2:-0}" mem_type="${3:-discrete}"
+    local vram_mb=$(( vram_bytes / 1048576 ))
+    local gtt_mb=$(( gtt_bytes / 1048576 ))
+    if [[ "$mem_type" == "unified" ]]; then
+        local host_ram_mb ram_budget_mb
+        host_ram_mb="$(amd_host_ram_mb)"
+        if [[ "$host_ram_mb" =~ ^[0-9]+$ && "$host_ram_mb" -gt 0 ]]; then
+            ram_budget_mb=$((host_ram_mb * 75 / 100))
+            [[ "$ram_budget_mb" -gt "$gtt_mb" ]] && gtt_mb="$ram_budget_mb"
+        fi
+        [[ "$gtt_mb" -gt "$vram_mb" ]] && vram_mb="$gtt_mb"
+    fi
+    awk -v mb="$vram_mb" 'BEGIN { printf "%.1f", mb / 1024 }'
 }
 
 # Generate a stable AMD GPU identifier using tiered strategy:
@@ -414,7 +440,6 @@ detect_amd_topo() {
 
         device_id=$(cat "$card_dir/device" 2>/dev/null | sed 's/^0x//') || device_id="0000"
         vram_bytes=$(cat "$card_dir/mem_info_vram_total" 2>/dev/null) || vram_bytes=0
-        vram_gb=$(awk -v bytes="$vram_bytes" 'BEGIN { printf "%.1f", bytes / 1073741824 }')
 
         uuid=$(amd_gpu_id "$card_dir" "$idx")
         gfx_ver=$(amd_gfx_version "$card_dir" "$idx")
@@ -434,6 +459,7 @@ detect_amd_topo() {
         local gtt_bytes mem_type
         gtt_bytes=$(cat "$card_dir/mem_info_gtt_total" 2>/dev/null) || gtt_bytes=0
         mem_type=$(amd_memory_type "$vram_bytes" "$gtt_bytes")
+        vram_gb=$(amd_effective_memory_gb "$vram_bytes" "$gtt_bytes" "$mem_type")
 
         gpus_tsv+="${idx}	${name}	${vram_gb}	${pcie_gen}	x${pcie_width}	${uuid}	${gfx_ver}	${render_node}	${mem_type}	${pci_bdf}"$'\n'
         idx=$((idx + 1))

@@ -17,15 +17,11 @@ pub fn detect() -> GpuInfo {
     }
 }
 
-/// Recommend a ODS tier based on detected GPU VRAM.
+/// Recommend a YuyinODS tier based on detected GPU VRAM.
 pub fn recommend_tier(gpu: &GpuInfo) -> u8 {
     match gpu.vram_mb {
         0 => 0,                    // CPU-only / cloud
-        v if v < 8192 => 1,       // < 8GB
-        v if v < 12288 => 1,      // 8GB — Tier 1
-        v if v < 24576 => 2,      // 12-24GB — Tier 2
-        v if v < 49152 => 3,      // 24-48GB — Tier 3
-        _ => 4,                    // 48GB+ — Tier 4
+        _ => 1,                    // Use tier 1 for any GPU
     }
 }
 

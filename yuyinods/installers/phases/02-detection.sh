@@ -382,22 +382,22 @@ if [[ $GPU_COUNT -gt 1 && "$GPU_BACKEND" == "nvidia" ]]; then
 fi
 
 # -----------------------------------------------------------------------------
-# AMD Multi-GPU Topology Detection
+# AMD Topology Detection
 # -----------------------------------------------------------------------------
-if [[ $GPU_COUNT -gt 1 && "$GPU_BACKEND" == "amd" ]]; then
-    ai "Detecting AMD multi-GPU topology..."
+if [[ $GPU_COUNT -gt 0 && "$GPU_BACKEND" == "amd" ]]; then
+    ai "Detecting AMD GPU topology..."
     if [[ -f "$SCRIPT_DIR/installers/lib/amd-topo.sh" ]]; then
         source "$SCRIPT_DIR/installers/lib/amd-topo.sh"
 
         GPU_TOPOLOGY_JSON=$(detect_amd_topo 2>>"$LOG_FILE") || {
-            warn "AMD multi-GPU topology detection failed — using fallback"
+            warn "AMD GPU topology detection failed — using fallback"
             ai_warn "Could not detect AMD GPU topology. Using default PCIe configuration."
             GPU_TOPOLOGY_JSON="{}"
         }
 
         if [[ -n "$GPU_TOPOLOGY_JSON" && "$GPU_TOPOLOGY_JSON" != "{}" ]]; then
             GPU_TOTAL_VRAM=$(echo "$GPU_TOPOLOGY_JSON" | jq -r '[.gpus[].memory_gb] | add * 1024 | floor')
-            log "AMD multi-GPU topology: Total VRAM=${GPU_TOTAL_VRAM}MB"
+            log "AMD GPU topology: Total effective memory=${GPU_TOTAL_VRAM}MB"
         else
             log "AMD topology detection returned empty, using basic GPU info"
             GPU_TOTAL_VRAM=$GPU_VRAM

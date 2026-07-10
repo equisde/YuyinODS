@@ -170,7 +170,11 @@ profile = {
     }
 }
 
-output_path.parent.mkdir(parents=True, exist_ok=True)
+try:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+except OSError:
+    output_path = pathlib.Path("/tmp") / output_path.name
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 output_path.write_text(json.dumps(profile, indent=2) + "\n", encoding="utf-8")
 
 if env_mode:

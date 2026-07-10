@@ -256,11 +256,19 @@ else
         if ! mkdir -p "$docker_tmp" 2>/dev/null; then
             ods_sudo mkdir -p "$docker_tmp" 2>/dev/null || docker_tmp="${TMPDIR:-/tmp}"
         fi
+        local compose_parallel_limit="${YUYINODS_COMPOSE_PARALLEL_LIMIT:-}"
+        if [[ -z "$compose_parallel_limit" || ! "$compose_parallel_limit" =~ ^[0-9]+$ || "$compose_parallel_limit" -lt 1 ]]; then
+            local docker_cpus
+            docker_cpus="$(docker info --format '{{.NCPU}}' 2>/dev/null || nproc 2>/dev/null || echo 1)"
+            docker_cpus="${docker_cpus//[!0-9]/}"
+            [[ -z "$docker_cpus" || "$docker_cpus" -lt 1 ]] && docker_cpus=1
+            compose_parallel_limit="$(awk -v cpus="$docker_cpus" 'BEGIN { v=int((cpus * 80 + 99) / 100); if (v < 1) v = 1; print v }')"
+        fi
         env_prefix=(
             "TMPDIR=$docker_tmp"
             "DOCKER_TMPDIR=$docker_tmp"
             "COMPOSE_BAKE=false"
-            "COMPOSE_PARALLEL_LIMIT=${YUYINODS_COMPOSE_PARALLEL_LIMIT:-1}"
+            "COMPOSE_PARALLEL_LIMIT=$compose_parallel_limit"
         )
         if [[ "${cmd[0]:-}" == "sudo" ]]; then
             command sudo env "${env_prefix[@]}" "${cmd[@]:1}" "$@"

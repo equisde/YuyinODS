@@ -131,7 +131,7 @@ SUMMARY_JSON_FILE="${SUMMARY_JSON_FILE:-}"
 
 usage() {
     cat << EOF
-ODS Installer v${VERSION}
+YuyinODS Installer v${VERSION}
 
 Usage: $0 [OPTIONS]
 
@@ -288,7 +288,7 @@ fi
 # the correct VERSION before /etc/os-release overwrites it)
 detect_pkg_manager
 log "Installer run started: pid=$$, script=$0"
-ods_prepare_sudo "ODS installer setup"
+ods_prepare_sudo "YuyinODS installer setup"
 export YUYINODS_SR_AUTO_INSTALL_PYYAML=1
 ods_ensure_python_module yaml python3-pyyaml pyyaml PyYAML
 if declare -f sr_load >/dev/null 2>&1; then

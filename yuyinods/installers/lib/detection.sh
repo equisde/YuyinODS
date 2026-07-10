@@ -114,6 +114,30 @@ get_docker_available_cpus() {
     get_host_logical_cpus
 }
 
+get_host_ram_mb() {
+    local ram_kb
+    ram_kb=$(grep MemTotal /proc/meminfo 2>/dev/null | awk '{print $2}')
+    if [[ "$ram_kb" =~ ^[0-9]+$ ]] && [[ "$ram_kb" -gt 0 ]]; then
+        echo $((ram_kb / 1024))
+    else
+        echo "0"
+    fi
+}
+
+calculate_resource_percent() {
+    local total="${1:-0}" percent="${2:-80}" min="${3:-1}"
+    if ! [[ "$total" =~ ^[0-9]+$ ]] || [[ "$total" -lt 1 ]]; then
+        total="$min"
+    fi
+    awk -v total="$total" -v percent="$percent" -v min="$min" '
+        BEGIN {
+            value = int((total * percent + 99) / 100)
+            if (value < min) value = min
+            if (value > total) value = total
+            print value
+        }'
+}
+
 calculate_llama_cpu_budget() {
     local backend="${1:-cpu}"
     local available="${2:-$(get_docker_available_cpus)}"
@@ -145,6 +169,24 @@ calculate_llama_cpu_budget() {
     [[ "$reservation" -gt "$limit" ]] && reservation="$limit"
 
     echo "$limit $reservation $available"
+}
+
+amd_unified_memory_budget_mb() {
+    local vram_bytes="${1:-0}" gtt_bytes="${2:-0}"
+    local host_ram_mb
+    local vram_mb=$(( vram_bytes / 1048576 ))
+    local gtt_mb=$(( gtt_bytes / 1048576 ))
+    host_ram_mb="$(get_host_ram_mb)"
+
+    # AMD APUs expose a small dedicated VRAM aperture plus a larger GTT/UMA
+    # pool. For model selection, the small aperture alone is misleading; use
+    # the larger shared-memory budget while leaving truly discrete cards on
+    # their real VRAM.
+    if [[ "$host_ram_mb" =~ ^[0-9]+$ && "$host_ram_mb" -gt 0 ]]; then
+        local ram_budget_mb=$((host_ram_mb * 75 / 100))
+        [[ "$ram_budget_mb" -gt "$gtt_mb" ]] && gtt_mb="$ram_budget_mb"
+    fi
+    [[ "$gtt_mb" -gt "$vram_mb" ]] && echo "$gtt_mb" || echo "$vram_mb"
 }
 
 ods_in_container() {
@@ -440,6 +482,7 @@ detect_gpu() {
         GPU_BACKEND="amd"
         GPU_COUNT=${#amd_card_dirs[@]}
         local total_vram_mb=0
+        local total_effective_vram_mb=0
         local gpu_names=()
         local has_apu=false has_discrete=false
 
@@ -459,10 +502,12 @@ detect_gpu() {
             # the GPU and is large on APUs (Strix Halo). VRAM alone is not a
             # safe gate: a future discrete 32 GB+ AMD card would be misidentified
             # as unified memory if vram_gb >= 32 were kept as an OR branch.
-            if [[ $gtt_gb -ge 16 && $vram_gb -le 4 ]] || [[ $gtt_gb -ge 32 ]]; then
+            if [[ $gtt_gb -ge 4 && $vram_gb -le 4 ]] || [[ $gtt_gb -ge 32 ]]; then
                 has_apu=true
+                total_effective_vram_mb=$(( total_effective_vram_mb + $(amd_unified_memory_budget_mb "$vram_bytes" "$gtt_bytes") ))
             else
                 has_discrete=true
+                total_effective_vram_mb=$(( total_effective_vram_mb + vram_mb ))
             fi
 
             # Get marketing name
@@ -475,7 +520,7 @@ detect_gpu() {
             gpu_names+=("$name")
         done
 
-        GPU_VRAM=$total_vram_mb
+        GPU_VRAM=$total_effective_vram_mb
         GPU_DEVICE_ID=$(cat "${amd_card_dirs[0]}/device" 2>/dev/null) || GPU_DEVICE_ID="unknown"
 
         # Determine memory type
@@ -509,9 +554,9 @@ detect_gpu() {
         fi
 
         if [[ $GPU_COUNT -gt 1 ]]; then
-            log "GPU: ${GPU_COUNT}x AMD (${GPU_VRAM}MB total VRAM, type=${GPU_MEMORY_TYPE}) — ${GPU_NAME}"
+            log "GPU: ${GPU_COUNT}x AMD (${GPU_VRAM}MB effective memory, ${total_vram_mb}MB dedicated VRAM, type=${GPU_MEMORY_TYPE}) — ${GPU_NAME}"
         else
-            log "GPU: $GPU_NAME (${GPU_VRAM}MB VRAM, ${GPU_MEMORY_TYPE} memory, AMD)"
+            log "GPU: $GPU_NAME (${GPU_VRAM}MB effective memory, ${total_vram_mb}MB dedicated VRAM, ${GPU_MEMORY_TYPE} memory, AMD)"
         fi
         return 0
     fi

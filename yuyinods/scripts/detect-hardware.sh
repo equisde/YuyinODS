@@ -208,7 +208,7 @@ detect_amd_sysfs() {
             if [[ $vram_total -gt 0 && $gtt_total -gt 0 ]]; then
                 local vram_gb=$(( vram_total / 1073741824 ))
                 local gtt_gb=$(( gtt_total / 1073741824 ))
-                if [[ $gtt_gb -ge 16 && $vram_gb -le 4 ]]; then
+                if [[ $gtt_gb -ge 4 && $vram_gb -le 4 ]]; then
                     # Small VRAM + large GTT = APU with unified memory
                     is_apu="true"
                 elif [[ $gtt_gb -ge 32 ]]; then
@@ -653,6 +653,11 @@ main() {
             if [[ "$is_apu" == "true" ]]; then
                 gpu_architecture="apu-unified"
                 memory_type="unified"
+                local gtt_mb ram_budget_mb
+                gtt_mb=$(( gtt_bytes / 1048576 ))
+                ram_budget_mb=$(( ram * 1024 * 75 / 100 ))
+                [[ "$ram_budget_mb" -gt "$gtt_mb" ]] && gtt_mb="$ram_budget_mb"
+                [[ "$gtt_mb" -gt "$gpu_vram_mb" ]] && gpu_vram_mb="$gtt_mb"
             else
                 gpu_architecture="rdna"
                 memory_type="discrete"

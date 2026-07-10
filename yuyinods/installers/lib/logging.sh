@@ -20,7 +20,27 @@ install_elapsed() {
   printf '%dm %02ds' "$m" "$s"
 }
 
-log() { echo -e "${GRN}[INFO]${NC} $1" | tee -a "$LOG_FILE"; }
-success() { echo -e "${BGRN}[OK]${NC} $1" | tee -a "$LOG_FILE"; }
-warn() { echo -e "${AMB}[WARN]${NC} $1" | tee -a "$LOG_FILE"; }
-error() { echo -e "${RED}[ERROR]${NC} $1" | tee -a "$LOG_FILE"; exit 1; }
+_ensure_log_file() {
+  local dir
+  dir="$(dirname "${LOG_FILE:-/tmp/yuyinods-install.log}")"
+  if [[ -n "$dir" ]] && mkdir -p "$dir" 2>/dev/null && touch "$LOG_FILE" 2>/dev/null; then
+    return 0
+  fi
+
+  local fallback="/tmp/yuyinods-install.log"
+  if [[ "${LOG_FILE:-}" != "$fallback" ]]; then
+    printf '[WARN] Cannot write installer log at %s; using %s for this run.\n' "${LOG_FILE:-unset}" "$fallback" >&2
+  fi
+  LOG_FILE="$fallback"
+  touch "$LOG_FILE" 2>/dev/null || true
+}
+
+_log_line() {
+  _ensure_log_file
+  echo -e "$1" | tee -a "$LOG_FILE"
+}
+
+log() { _log_line "${GRN}[INFO]${NC} $1"; }
+success() { _log_line "${BGRN}[OK]${NC} $1"; }
+warn() { _log_line "${AMB}[WARN]${NC} $1"; }
+error() { _log_line "${RED}[ERROR]${NC} $1"; exit 1; }
