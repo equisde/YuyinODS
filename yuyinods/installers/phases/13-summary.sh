@@ -166,13 +166,17 @@ if [[ -f "$PREFLIGHT_REPORT_FILE" ]]; then
 fi
 
 # Run preflight check to validate installation
-echo ""
-bootline
-echo -e "${BGRN}RUNNING PREFLIGHT VALIDATION${NC}"
-bootline
-echo ""
+if $DRY_RUN; then
+    log "[DRY RUN] Skipping runtime preflight validation"
+else
+    echo ""
+    bootline
+    echo -e "${BGRN}RUNNING PREFLIGHT VALIDATION${NC}"
+    bootline
+    echo ""
+fi
 
-if [[ -f "$SCRIPT_DIR/yuyinods-preflight.sh" ]]; then
+if ! $DRY_RUN && [[ -f "$SCRIPT_DIR/yuyinods-preflight.sh" ]]; then
     # Services like APE and Embeddings may still be starting on fresh installs.
     # Retry up to 3 times with 10s backoff before reporting failures.
     _preflight_passed=false
@@ -190,7 +194,7 @@ if [[ -f "$SCRIPT_DIR/yuyinods-preflight.sh" ]]; then
         ai_warn "Preflight did not fully pass. Services may still be starting."
         ai "  Check with: ods status"
     fi
-else
+elif ! $DRY_RUN; then
     log "Preflight script not found — skipping validation"
 fi
 
@@ -202,7 +206,7 @@ bootline
 echo ""
 if [[ -f "$SCRIPT_DIR/scripts/validate-manifests.sh" ]]; then
     if bash "$SCRIPT_DIR/scripts/validate-manifests.sh"; then
-        ai_ok "Extension manifests validated for this ODS version."
+        ai_ok "Extension manifests validated for this YuyinODS version."
     else
         warn "Extension manifest validation reported issues. See details above."
     fi
@@ -211,14 +215,18 @@ else
 fi
 
 # Non-core extension runtime check (Docker + optional HTTP health; non-blocking)
-echo ""
-bootline
-echo -e "${BGRN}EXTENSION RUNTIME CHECK${NC}"
-bootline
-echo ""
-if [[ -f "$SCRIPT_DIR/scripts/extension-runtime-check.sh" ]]; then
-    bash "$SCRIPT_DIR/scripts/extension-runtime-check.sh" "$INSTALL_DIR" || true
+if $DRY_RUN; then
+    log "[DRY RUN] Skipping extension runtime check"
 else
+    echo ""
+    bootline
+    echo -e "${BGRN}EXTENSION RUNTIME CHECK${NC}"
+    bootline
+    echo ""
+fi
+if ! $DRY_RUN && [[ -f "$SCRIPT_DIR/scripts/extension-runtime-check.sh" ]]; then
+    bash "$SCRIPT_DIR/scripts/extension-runtime-check.sh" "$INSTALL_DIR" || true
+elif ! $DRY_RUN; then
     log "extension-runtime-check.sh not found — skipping"
 fi
 
@@ -232,7 +240,7 @@ if ! $DRY_RUN; then
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=ODS
+Name=YuyinODS
 Comment=Local AI Dashboard
 Exec=xdg-open http://localhost:3001
 Icon=applications-internet
@@ -251,7 +259,7 @@ DESKTOP_EOF
         fi
     fi
 
-    ai_ok "Desktop shortcut created: ODS"
+    ai_ok "Desktop shortcut created: YuyinODS"
 fi
 
 #=============================================================================
@@ -354,7 +362,7 @@ print("ok" if values.get("setupComplete") and has_model and prefs.get("defaultCh
     fi
 fi
 
-if command -v ods_readiness_summary >/dev/null 2>&1; then
+if ! $DRY_RUN && command -v ods_readiness_summary >/dev/null 2>&1; then
     _dashboard_url="http://localhost:${SERVICE_PORTS[dashboard]:-3001}"
     {
         printf 'Dashboard|http://127.0.0.1:%s%s|%s|%s\n' \
@@ -396,7 +404,7 @@ WEBUI_PORT="${SERVICE_PORTS[open-webui]:-3000}"
 OPENCLAW_PORT="${SERVICE_PORTS[openclaw]:-7860}"
 LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "")
 echo -e "${GRN}──────────────────────────────────────────────────────────────────────────────${NC}"
-echo -e "${BGRN}  YOUR ODS IS LIVE${NC}"
+echo -e "${BGRN}  YOUR YUYINODS IS LIVE${NC}"
 echo -e "${GRN}──────────────────────────────────────────────────────────────────────────────${NC}"
 echo ""
 echo -e "  ${BGRN}Dashboard${NC}    ${WHT}http://localhost:${DASHBOARD_PORT}${NC}"

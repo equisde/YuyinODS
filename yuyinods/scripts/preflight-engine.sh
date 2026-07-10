@@ -342,9 +342,17 @@ report = {
     "checks": checks,
 }
 
+def write_report(path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
 report_path = pathlib.Path(report_file)
-report_path.parent.mkdir(parents=True, exist_ok=True)
-report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+try:
+    report_path = write_report(report_path)
+except OSError:
+    report_path = write_report(pathlib.Path("/tmp") / report_path.name)
 
 if env_mode:
     def out(key, value):

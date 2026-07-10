@@ -33,7 +33,7 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-echo -e "${CYAN}ODS Preflight Check${NC}"
+echo -e "${CYAN}YuyinODS Preflight Check${NC}"
 echo "=============================="
 echo ""
 

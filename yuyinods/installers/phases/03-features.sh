@@ -108,6 +108,7 @@ if [[ "${ENABLE_COMFYUI:-false}" == "true" && "${GPU_BACKEND:-}" == "amd" ]]; th
         ai_warn "ComfyUI AMD image is gfx1151-only; detected ${_amd_comfy_gfx}. Image generation disabled to avoid ROCm hangs."
         ai "Use a ComfyUI image built for ${_amd_comfy_gfx}, or keep image generation disabled on this AMD iGPU."
         ENABLE_COMFYUI=false
+        ENABLE_IMAGE_GENERATION=false
     fi
     unset _amd_comfy_gfx
 fi
