@@ -277,6 +277,49 @@ else
         fi
     }
 
+    _phase11_build_service() {
+        local svc="$1"
+        local no_cache="${2:-false}"
+        local memory_limit_mb="${YUYINODS_BUILD_MEMORY_LIMIT_MB:-}"
+        local -a build_args build_args_without_memory
+        local build_tmp_log
+        build_args=(build)
+        [[ "$no_cache" == "true" ]] && build_args+=(--no-cache)
+        if [[ "$memory_limit_mb" =~ ^[0-9]+$ && "$memory_limit_mb" -gt 0 ]]; then
+            build_args+=(--memory "${memory_limit_mb}m")
+        fi
+        build_args+=("$svc")
+        build_args_without_memory=(build)
+        [[ "$no_cache" == "true" ]] && build_args_without_memory+=(--no-cache)
+        build_args_without_memory+=("$svc")
+
+        build_tmp_log="$(mktemp "${YUYINODS_TEMP_DIR:-${TMPDIR:-/tmp}}/yuyinods-build-${svc}.XXXXXX.log" 2>/dev/null || true)"
+        if [[ -z "$build_tmp_log" ]]; then
+            _phase11_compose "${COMPOSE_FLAGS_ARR[@]}" "${build_args[@]}"
+            return $?
+        fi
+
+        if _phase11_compose "${COMPOSE_FLAGS_ARR[@]}" "${build_args[@]}" > "$build_tmp_log" 2>&1; then
+            cat "$build_tmp_log"
+            rm -f "$build_tmp_log"
+            return 0
+        fi
+
+        if [[ " ${build_args[*]} " == *" --memory "* ]] && grep -qiE 'memory.*not supported|not supported.*memory|buildkit' "$build_tmp_log"; then
+            cat "$build_tmp_log"
+            log "Compose build for ${svc} rejected --memory ${memory_limit_mb}m; retrying without memory limit."
+            if _phase11_compose "${COMPOSE_FLAGS_ARR[@]}" "${build_args_without_memory[@]}" > "$build_tmp_log" 2>&1; then
+                cat "$build_tmp_log"
+                rm -f "$build_tmp_log"
+                return 0
+            fi
+        fi
+
+        cat "$build_tmp_log"
+        rm -f "$build_tmp_log"
+        return 1
+    }
+
     _phase11_write_compose_launch_record() {
         local path="$INSTALL_DIR/logs/compose-launch.txt"
         local command_text
@@ -881,9 +924,9 @@ MODELS_INI_EOF
 
         _build_count=$((_build_count + 1))
         if [[ "${YUYINODS_FORCE_REBUILD:-false}" == "true" ]]; then
-            _phase11_compose "${COMPOSE_FLAGS_ARR[@]}" build --no-cache "$_svc" >> "$LOG_FILE" 2>&1 &
+            _phase11_build_service "$_svc" true >> "$LOG_FILE" 2>&1 &
         else
-            _phase11_compose "${COMPOSE_FLAGS_ARR[@]}" build "$_svc" >> "$LOG_FILE" 2>&1 &
+            _phase11_build_service "$_svc" false >> "$LOG_FILE" 2>&1 &
         fi
         _build_pid=$!
         _build_failed=false

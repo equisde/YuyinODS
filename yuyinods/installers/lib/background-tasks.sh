@@ -12,8 +12,9 @@
 #   Add new background task types here.
 # ============================================================================
 
-# Registry file for background tasks
-BG_TASK_REGISTRY="${BG_TASK_REGISTRY:-/tmp/yuyinods-bg-tasks.json}"
+# Registry file for background tasks. Keep it with the installer temp files so
+# model-download state follows the configured /home/parallax/ODS temp layout.
+BG_TASK_REGISTRY="${BG_TASK_REGISTRY:-${YUYINODS_TEMP_DIR:-${TMPDIR:-/tmp}}/yuyinods-bg-tasks.json}"
 
 # Start tracking a background task
 # Usage: bg_task_start <task_id> <pid> <description> <log_file>
@@ -25,6 +26,7 @@ bg_task_start() {
     
     # Create registry if it doesn't exist
     if [[ ! -f "$BG_TASK_REGISTRY" ]]; then
+        mkdir -p "$(dirname "$BG_TASK_REGISTRY")" 2>/dev/null || true
         echo "[]" > "$BG_TASK_REGISTRY"
     fi
     

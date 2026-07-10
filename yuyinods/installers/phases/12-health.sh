@@ -34,8 +34,11 @@ ods_progress 85 "health" "Checking service health"
 show_phase 6 6 "Systems Online" "~1-2 minutes"
 
 if $DRY_RUN; then
+    _dry_health_services=("llama-server" "Open WebUI")
+    [[ "${ENABLE_PERPLEXICA:-true}" == "true" ]] && _dry_health_services+=("Perplexica")
+    [[ "${ENABLE_COMFYUI:-false}" == "true" ]] && _dry_health_services+=("ComfyUI")
     log "[DRY RUN] Would verify service health:"
-    log "[DRY RUN]   - llama-server, Open WebUI, Perplexica, ComfyUI"
+    log "[DRY RUN]   - ${_dry_health_services[*]}"
     log "[DRY RUN]   - Auto-configure Perplexica for ${LLM_MODEL:-default model}"
     [[ "$ENABLE_HERMES" == "true" ]] && log "[DRY RUN]   - Hermes Agent + hermes-proxy"
     [[ "$ENABLE_OPENCLAW" == "true" ]] && log "[DRY RUN]   - OpenClaw"

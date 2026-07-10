@@ -218,6 +218,24 @@ if [[ -x "$SCRIPT_DIR/scripts/resolve-compose-stack.sh" ]]; then
         --gpu-count "${GPU_COUNT:-1}" --yuyinods-mode "${YUYINODS_MODE:-local}" 2>/dev/null) || true
     if [[ -n "$_refreshed_flags" ]]; then
         COMPOSE_FLAGS="$_refreshed_flags"
+        if $DRY_RUN && [[ "${ENABLE_COMFYUI:-false}" != "true" ]]; then
+            _filtered_flags=()
+            _skip_next=false
+            read -ra _compose_flags_arr <<< "$COMPOSE_FLAGS"
+            for _arg in "${_compose_flags_arr[@]}"; do
+                if $_skip_next; then
+                    _skip_next=false
+                    [[ "$_arg" == *"extensions/services/comfyui/"* ]] && continue
+                    _filtered_flags+=("-f" "$_arg")
+                elif [[ "$_arg" == "-f" ]]; then
+                    _skip_next=true
+                else
+                    _filtered_flags+=("$_arg")
+                fi
+            done
+            COMPOSE_FLAGS="${_filtered_flags[*]}"
+            unset _filtered_flags _compose_flags_arr _skip_next _arg
+        fi
         log "Compose flags refreshed after feature selection"
     fi
 fi
@@ -238,7 +256,7 @@ if [[ "$ENABLE_OPENCLAW" == "true" ]]; then
     log "OpenClaw config: $OPENCLAW_CONFIG (matched to Tier $TIER)"
 fi
 
-log "All services enabled (core install)"
+log "Feature selection complete"
 
 # Single GPU — generate a trivial assignment so the dashboard API can map
 # the GPU UUID to services (without this, /api/gpu/detailed shows empty
