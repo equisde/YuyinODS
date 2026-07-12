@@ -51,10 +51,16 @@ RUN sed -i 's/\([^_]\)expf(\([^)]*\))/\1__expf(\2)/g' \
         ggml/src/ggml-cuda/fattn-common.cuh 2>/dev/null || true
 
 # ── Build with HIP + rocWMMA flash attention + hipBLASLt ──
-RUN cmake -B build -G Ninja \
+RUN export AMDGPU_TARGET_CLEANED=$(echo "${AMDGPU_TARGET}" | sed 's/gfx9012/gfx90c/g') && \
+    if echo "${AMDGPU_TARGET_CLEANED}" | grep -qE "gfx900|gfx902|gfx90c"; then \
+        FATTN_VAL=OFF; \
+    else \
+        FATTN_VAL=ON; \
+    fi && \
+    cmake -B build -G Ninja \
         -DGGML_HIP=ON \
-        -DGGML_HIP_ROCWMMA_FATTN=ON \
-        -DAMDGPU_TARGETS=${AMDGPU_TARGET} \
+        -DGGML_HIP_ROCWMMA_FATTN=${FATTN_VAL} \
+        -DAMDGPU_TARGETS=${AMDGPU_TARGET_CLEANED} \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_HIP_COMPILER=/opt/rocm/bin/amdclang++ \
     && cmake --build build --config Release -j$(nproc)
