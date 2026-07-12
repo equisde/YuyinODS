@@ -69,6 +69,42 @@ def render_litellm_lemonade(inputs: RenderInputs) -> RenderedFile:
     model = lemonade_model_id(inputs)
     api_base = inputs.lemonade_api_base.rstrip("/") or "http://llama-server:8080/api/v1"
     content = f"""model_list:
+  - model_name: Llama-3.1-8B-Lexi-Uncensored-V2
+    litellm_params:
+      model: openai/extra.Llama-3.1-8B-Lexi-Uncensored-V2-Q4_K_M.gguf
+      api_base: {api_base}
+      api_key: {inputs.litellm_key}
+      extra_body:
+        chat_template_kwargs:
+          enable_thinking: false
+
+  - model_name: Phi-4-mini-instruct
+    litellm_params:
+      model: openai/extra.Phi-4-mini-instruct-Q4_K_M.gguf
+      api_base: {api_base}
+      api_key: {inputs.litellm_key}
+      extra_body:
+        chat_template_kwargs:
+          enable_thinking: false
+
+  - model_name: Qwen3.5-2B-Instruct
+    litellm_params:
+      model: openai/extra.Qwen3.5-2B-Q4_K_M.gguf
+      api_base: {api_base}
+      api_key: {inputs.litellm_key}
+      extra_body:
+        chat_template_kwargs:
+          enable_thinking: false
+
+  - model_name: Gemma-3-4b-it-uncensored-v2
+    litellm_params:
+      model: openai/extra.gemma-3-4b-it-uncensored-v2_Q4_K_M.gguf
+      api_base: {api_base}
+      api_key: {inputs.litellm_key}
+      extra_body:
+        chat_template_kwargs:
+          enable_thinking: false
+
   - model_name: default
     litellm_params:
       model: openai/{model}
