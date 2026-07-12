@@ -66,7 +66,7 @@ services:
       # longer a valid value. Setting auto + LEMONADE_LLAMACPP_ROCM_BIN points
       # Lemonade at the custom ROCm-built llama-server binary while keeping the
       # field schema-valid.
-      - LEMONADE_LLAMACPP_BACKEND=auto
+      - LEMONADE_LLAMACPP_BACKEND=${LEMONADE_LLAMACPP_BACKEND:-auto}
       # Custom binary at /opt/llama-custom is gfx1151-only (Strix Halo patches +
       # AMDGPU_TARGET=gfx1151 at build time). Phase 06 sets this env var only
       # when the detected gfx target is gfx1151; on any other AMD architecture
