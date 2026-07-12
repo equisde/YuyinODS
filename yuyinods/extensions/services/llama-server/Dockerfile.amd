@@ -50,6 +50,9 @@ RUN sed -i 's/mmq_x = 64/mmq_x = 48/g' ggml/src/ggml-cuda/mmq.cu 2>/dev/null || 
 RUN sed -i 's/\([^_]\)expf(\([^)]*\))/\1__expf(\2)/g' \
         ggml/src/ggml-cuda/fattn-common.cuh 2>/dev/null || true
 
+# Comment out missing HIP FP8 typedefs to allow compilation on ROCm 6.2 for gfx90c
+RUN sed -i 's/typedef __hip_fp8_/\/\/ typedef __hip_fp8_/g' ggml/src/ggml-cuda/vendors/hip.h 2>/dev/null || true
+
 # ── Build with HIP + rocWMMA flash attention + hipBLASLt ──
 RUN export AMDGPU_TARGET_CLEANED=$(echo "${AMDGPU_TARGET}" | sed 's/gfx9012/gfx90c/g') && \
     if echo "${AMDGPU_TARGET_CLEANED}" | grep -qE "gfx900|gfx902|gfx90c"; then \
