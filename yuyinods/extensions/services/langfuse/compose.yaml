@@ -173,6 +173,7 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
+    command: ["clickhouse-server", "--config-file=/etc/clickhouse-server/config.xml", "--listen_host=0.0.0.0"]
     environment:
       CLICKHOUSE_USER: "langfuse"
       CLICKHOUSE_PASSWORD: "${LANGFUSE_CLICKHOUSE_PASSWORD}"
