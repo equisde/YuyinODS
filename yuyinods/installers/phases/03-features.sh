@@ -105,10 +105,16 @@ fi
 if [[ "${ENABLE_COMFYUI:-false}" == "true" && "${GPU_BACKEND:-}" == "amd" ]]; then
     _amd_comfy_gfx="$(echo "${GPU_TOPOLOGY_JSON:-{\}}" | jq -r '[.gpus[]?.gfx_version] | unique | .[0] // "unknown"' 2>/dev/null || echo "unknown")"
     if [[ "$_amd_comfy_gfx" != "gfx1151" ]]; then
-        ai_warn "ComfyUI AMD image is gfx1151-only; detected ${_amd_comfy_gfx}. Image generation disabled to avoid ROCm hangs."
-        ai "Use a ComfyUI image built for ${_amd_comfy_gfx}, or keep image generation disabled on this AMD iGPU."
-        ENABLE_COMFYUI=false
-        ENABLE_IMAGE_GENERATION=false
+        if [[ -n "${COMFYUI_AMD_IMAGE:-}" && "${COMFYUI_AMD_ALLOW_UNSUPPORTED_GFX:-false}" == "true" ]]; then
+            ai_warn "ComfyUI AMD override enabled for ${_amd_comfy_gfx}: ${COMFYUI_AMD_IMAGE}"
+            ai_warn "This is operator-provided; verify the image supports ${_amd_comfy_gfx} and does not CPU-fallback."
+        else
+            ai_warn "ComfyUI AMD image is gfx1151-only; detected ${_amd_comfy_gfx}."
+            ai "I will configure a local build using Dockerfile.amd to support ${_amd_comfy_gfx}."
+            COMFYUI_AMD_IMAGE="yuyinods-comfyui-rocm:latest"
+            COMFYUI_AMD_ALLOW_UNSUPPORTED_GFX="true"
+            export COMFYUI_AMD_IMAGE COMFYUI_AMD_ALLOW_UNSUPPORTED_GFX
+        fi
     fi
     unset _amd_comfy_gfx
 fi

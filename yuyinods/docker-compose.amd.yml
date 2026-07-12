@@ -85,7 +85,7 @@ services:
           memory: ${LLAMA_SERVER_MEMORY_LIMIT:-110G}
         reservations:
           cpus: '${LLAMA_CPU_RESERVATION:-4.0}'
-          memory: 8G
+          memory: ${LLAMA_SERVER_MEMORY_RESERVATION:-8G}
 
   # Services route through LiteLLM (YUYINODS_MODE=lemonade sets LLM_API_URL=http://litellm:4000).
   # LiteLLM handles the /api/v1 translation to Lemonade internally.

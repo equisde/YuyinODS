@@ -156,7 +156,7 @@ Fix with: sudo chown -R \$(id -u):\$(id -g) $INSTALL_DIR/config $INSTALL_DIR/dat
     if [[ "$SCRIPT_DIR" != "$INSTALL_DIR" ]]; then
         ai "Copying source files to $INSTALL_DIR..."
         if command -v rsync &>/dev/null; then
-            rsync -a --no-owner --no-group \
+            rsync -a --no-owner --no-group --no-times \
                 --exclude='.git' \
                 --exclude='data/' \
                 --exclude='logs/' \
@@ -275,7 +275,7 @@ Fix with: sudo chown -R \$(id -u):\$(id -g) $INSTALL_DIR/config $INSTALL_DIR/dat
         # Exclude .git and .openclaw dirs — those are runtime/dev artifacts
         if [[ -d "$SCRIPT_DIR/config/openclaw/workspace" ]]; then
             if command -v rsync &>/dev/null; then
-                rsync -a --no-owner --no-group --exclude='.git' --exclude='.openclaw' --exclude='.gitkeep' \
+                rsync -a --no-owner --no-group --no-times --exclude='.git' --exclude='.openclaw' --exclude='.gitkeep' \
                     "$SCRIPT_DIR/config/openclaw/workspace/" "$INSTALL_DIR/config/openclaw/workspace/"
             else
                 cp -r "$SCRIPT_DIR/config/openclaw/workspace"/* "$INSTALL_DIR/config/openclaw/workspace/" 2>/dev/null || true
@@ -568,6 +568,19 @@ raise SystemExit(1)' 2>/dev/null && return 0
     _cpu_backend="${GPU_BACKEND:-cpu}"
     [[ "$_cpu_backend" == "none" ]] && _cpu_backend="cpu"
     read -r _llama_cpu_limit_raw _llama_cpu_reservation_raw _docker_available_cpus <<< "$(calculate_llama_cpu_budget "$_cpu_backend")"
+    if [[ "${GPU_MEMORY_TYPE:-}" == "unified" ]]; then
+        # Limit CPU threads to prevent bandwidth starvation and system freezes/instabilities
+        _max_unified_cpus=$(( _docker_available_cpus * 60 / 100 ))
+        (( _max_unified_cpus < 2 )) && _max_unified_cpus=2
+        _docker_available_cpus="$_max_unified_cpus"
+
+        if awk "BEGIN { exit !($_llama_cpu_limit_raw > $_max_unified_cpus) }"; then
+            _llama_cpu_limit_raw="$_max_unified_cpus"
+        fi
+        if awk "BEGIN { exit !($_llama_cpu_reservation_raw > $_max_unified_cpus) }"; then
+            _llama_cpu_reservation_raw="$_max_unified_cpus"
+        fi
+    fi
     _host_ram_mb="$(get_host_ram_mb)"
     YUYINODS_BUILD_CPU_PERCENT="${YUYINODS_BUILD_CPU_PERCENT:-80}"
     YUYINODS_BUILD_RAM_PERCENT="${YUYINODS_BUILD_RAM_PERCENT:-80}"
@@ -589,6 +602,37 @@ raise SystemExit(1)' 2>/dev/null && return 0
     HERMES_CPU_RESERVATION=$(_select_service_cpu_reservation HERMES_CPU_RESERVATION "0.5" "$HERMES_CPU_LIMIT")
     COMFYUI_CPU_LIMIT=$(_select_service_cpu_limit COMFYUI_CPU_LIMIT "2.0" "$_docker_available_cpus")
     COMFYUI_CPU_RESERVATION=$(_select_service_cpu_reservation COMFYUI_CPU_RESERVATION "0.5" "$COMFYUI_CPU_LIMIT")
+
+    # Calculate memory budgets based on host RAM to prevent OOM freezes
+    _host_ram_gb=$(( _host_ram_mb / 1024 ))
+    _llama_mem_limit_gb=$(( _host_ram_gb * 60 / 100 ))
+    _llama_mem_res_gb=$(( _host_ram_gb * 30 / 100 ))
+    _comfy_mem_limit_gb=$(( _host_ram_gb * 50 / 100 ))
+    _comfy_mem_res_gb=$(( _host_ram_gb * 20 / 100 ))
+
+    # Keep sanity minimums
+    (( _llama_mem_limit_gb < 6 )) && _llama_mem_limit_gb=6
+    (( _llama_mem_res_gb < 3 )) && _llama_mem_res_gb=3
+    (( _comfy_mem_limit_gb < 4 )) && _comfy_mem_limit_gb=4
+    (( _comfy_mem_res_gb < 2 )) && _comfy_mem_res_gb=2
+
+    # For high-end systems, fall back to high defaults
+    if (( _host_ram_gb >= 64 )); then
+        _llama_mem_limit_gb=64
+        _llama_mem_res_gb=16
+        _comfy_mem_limit_gb=24
+        _comfy_mem_res_gb=8
+    elif (( _host_ram_gb >= 32 )); then
+        _llama_mem_limit_gb=24
+        _llama_mem_res_gb=8
+        _comfy_mem_limit_gb=16
+        _comfy_mem_res_gb=4
+    fi
+
+    LLAMA_SERVER_MEMORY_LIMIT="${_llama_mem_limit_gb}G"
+    LLAMA_SERVER_MEMORY_RESERVATION="${_llama_mem_res_gb}G"
+    COMFYUI_MEMORY_LIMIT="${_comfy_mem_limit_gb}G"
+    COMFYUI_MEMORY_RESERVATION="${_comfy_mem_res_gb}G"
 
     # Network binding (--lan or exported BIND_ADDRESS wins over a stale .env;
     # otherwise preserve the existing .env value and default to localhost-only).
@@ -690,6 +734,21 @@ raise SystemExit(1)' 2>/dev/null && return 0
         GPU_ASSIGNMENT_JSON_B64=$(echo "$GPU_ASSIGNMENT_JSON" | jq -c '.' | base64 -w0)
     else
         GPU_ASSIGNMENT_JSON_B64=""
+    fi
+
+    # Detect AMD GPU gfx version and compute HSA override for ComfyUI
+    _amd_gfx_detected="gfx1151"
+    _comfy_hsa_override=""
+    if [[ "$GPU_BACKEND" == "amd" ]]; then
+        _amd_gfx_detected=$(echo "${GPU_TOPOLOGY_JSON:-{\}}" | jq -r '[.gpus[]?.gfx_version] | unique | .[0] // "gfx1151"' 2>/dev/null || echo "gfx1151")
+        [[ -z "$_amd_gfx_detected" || "$_amd_gfx_detected" == "null" || "$_amd_gfx_detected" == "unknown" ]] && _amd_gfx_detected="gfx1151"
+        case "$_amd_gfx_detected" in
+            gfx90c|gfx9012|gfx902|gfx900) _comfy_hsa_override="9.0.0" ;;
+            gfx103*)                       _comfy_hsa_override="10.3.0" ;;
+            gfx110*)                       _comfy_hsa_override="11.0.0" ;;
+            gfx1151)                      _comfy_hsa_override="11.5.1" ;;
+            *)                            _comfy_hsa_override="" ;;
+        esac
     fi
 
     # Generate .env file
@@ -801,6 +860,8 @@ LLAMA_PARALLEL=${LLAMA_PARALLEL:-1}
 # LLAMA_ARG_SPEC_DRAFT_N_MAX=3
 LLAMA_CPU_LIMIT=${LLAMA_CPU_LIMIT}
 LLAMA_CPU_RESERVATION=${LLAMA_CPU_RESERVATION}
+LLAMA_SERVER_MEMORY_LIMIT=${LLAMA_SERVER_MEMORY_LIMIT}
+LLAMA_SERVER_MEMORY_RESERVATION=${LLAMA_SERVER_MEMORY_RESERVATION}
 
 # Bundled service CPU budgets. These are capped to CPUs exposed by Docker so
 # small hosts do not fail container creation on fixed compose limits.
@@ -966,6 +1027,14 @@ LANGFUSE_INIT_USER_PASSWORD=${LANGFUSE_INIT_USER_PASSWORD}
 
 # ── Image Generation ──
 ENABLE_IMAGE_GENERATION=${ENABLE_COMFYUI:-true}
+$(if [[ "$GPU_BACKEND" == "amd" ]]; then cat << COMFY_AMD_ENV
+COMFYUI_AMD_IMAGE=${COMFYUI_AMD_IMAGE:-yuyinods-comfyui-rocm:latest}
+COMFYUI_AMD_ALLOW_UNSUPPORTED_GFX=${COMFYUI_AMD_ALLOW_UNSUPPORTED_GFX:-true}
+COMFYUI_AMD_HSA_OVERRIDE_GFX_VERSION=${COMFYUI_AMD_HSA_OVERRIDE_GFX_VERSION:-$_comfy_hsa_override}
+COMFYUI_MEMORY_LIMIT=${COMFYUI_MEMORY_LIMIT}
+COMFYUI_MEMORY_RESERVATION=${COMFYUI_MEMORY_RESERVATION}
+COMFY_AMD_ENV
+fi)
 
 #=== Multi-GPU Settings ===
 GPU_COUNT=${GPU_COUNT:-1}

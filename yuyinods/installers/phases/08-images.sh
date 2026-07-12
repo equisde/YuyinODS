@@ -35,7 +35,13 @@ if [[ "$GPU_BACKEND" == "amd" ]]; then
         _lemonade_image="${LEMONADE_SERVER_IMAGE:-${BACKEND_LEMONADE_CONTAINER_IMAGE:-ghcr.io/lemonade-sdk/lemonade-server:v10.2.0}}"
         PULL_LIST+=("${_lemonade_image}|LEMONADE — downloading the brain (AMD ROCm)")
     fi
-    [[ "$ENABLE_COMFYUI" == "true" ]] && PULL_LIST+=("ignatberesnev/comfyui-gfx1151:v0.2|COMFYUI — image generation engine (gfx1151)")
+    if [[ "$ENABLE_COMFYUI" == "true" ]]; then
+        if [[ "${COMFYUI_AMD_IMAGE:-}" == "yuyinods-comfyui-rocm:latest" || -z "${COMFYUI_AMD_IMAGE:-}" ]]; then
+            PULL_LIST+=("rocm/pytorch:rocm6.2_ubuntu22.04_py3.10_pytorch_release_2.3.0|COMFYUI — PyTorch ROCm base image")
+        else
+            PULL_LIST+=("${COMFYUI_AMD_IMAGE:-ignatberesnev/comfyui-gfx1151:v0.2}|COMFYUI — image generation engine (AMD ROCm)")
+        fi
+    fi
 elif [[ "$GPU_BACKEND" == "cpu" ]]; then
     PULL_LIST+=("${LLAMA_SERVER_IMAGE:-ghcr.io/ggml-org/llama.cpp:server-b8248}|LLAMA-SERVER — downloading the brain (CPU)")
 else

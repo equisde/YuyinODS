@@ -603,7 +603,7 @@ except Exception:
     elif [[ "${YUYINODS_MODE:-local}" == "cloud" ]]; then
         ai "Cloud mode — skipping image model download"
     elif [[ "$GPU_BACKEND" == "amd" ]]; then
-        COMFYUI_BASE="$INSTALL_DIR/data/comfyui/ComfyUI/models"
+        COMFYUI_BASE="$INSTALL_DIR/data/comfyui/models"
     elif [[ "$GPU_BACKEND" == "nvidia" ]]; then
         COMFYUI_BASE="$INSTALL_DIR/data/comfyui/models"
     fi
@@ -946,6 +946,16 @@ MODELS_INI_EOF
             printf "\r  ${BGRN}✓${NC} %-60s\n" "$_svc built"
         fi
     done
+
+    # Clean up Docker build cache and intermediate layers to preserve disk space
+    if [[ $_build_count -gt 0 ]]; then
+        if command -v docker >/dev/null 2>&1; then
+            ai "Pruning Docker build cache and dangling images to free disk space..."
+            docker builder prune -f >> "$LOG_FILE" 2>&1 || true
+            docker image prune -f >> "$LOG_FILE" 2>&1 || true
+            ai_ok "Docker build cache and dangling images pruned"
+        fi
+    fi
 
     # Exclude failed-build services from compose-up. Without this, --no-build
     # at compose-up time would see a referenced image that doesn't exist and

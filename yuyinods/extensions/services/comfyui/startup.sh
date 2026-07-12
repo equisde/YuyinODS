@@ -68,6 +68,46 @@ fi
 #-----------------------------------------------------------------------------
 echo "[startup] Starting ComfyUI server..."
 cd "$COMFYUI_DIR"
+
+# Patch torch.library.custom_op, torch.serialization.add_safe_globals, and torch.nn.RMSNorm for PyTorch < 2.4 compatibility
+if [ -f "main.py" ]; then
+    if ! grep -q "torch.library.custom_op" main.py; then
+        echo "[startup] Patching main.py for PyTorch < 2.4 compatibility..."
+        cat << 'EOF' > main.py.tmp
+import torch
+if not hasattr(torch.library, 'custom_op'):
+    def dummy_custom_op(*args, **kwargs):
+        def decorator(func):
+            return func
+        return decorator
+    torch.library.custom_op = dummy_custom_op
+if not hasattr(torch.serialization, 'add_safe_globals'):
+    torch.serialization.add_safe_globals = lambda *args, **kwargs: None
+if not hasattr(torch.nn, 'RMSNorm'):
+    class PyTorchRMSNorm(torch.nn.Module):
+        def __init__(self, normalized_shape, eps=1e-6, elementwise_affine=True, device=None, dtype=None):
+            super().__init__()
+            self.eps = eps
+            self.normalized_shape = (normalized_shape,) if isinstance(normalized_shape, int) else tuple(normalized_shape)
+            if elementwise_affine:
+                self.weight = torch.nn.Parameter(torch.ones(self.normalized_shape, device=device, dtype=dtype))
+            else:
+                self.register_parameter('weight', None)
+        def forward(self, x):
+            variance = x.pow(2).mean(-1, keepdim=True)
+            x = x * torch.rsqrt(variance + self.eps)
+            if self.weight is not None:
+                return self.weight * x
+            return x
+    torch.nn.RMSNorm = PyTorchRMSNorm
+EOF
+        cat main.py >> main.py.tmp
+        mv main.py.tmp main.py
+    fi
+fi
+
+pip install --user "numpy<2" || true
+
 PYTHON_CMD="python3"
 if command -v python3 >/dev/null 2>&1 && python3 -c 'import sys; sys.exit(0)' >/dev/null 2>&1; then
     PYTHON_CMD="python3"
