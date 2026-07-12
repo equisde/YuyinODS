@@ -46,12 +46,6 @@ services:
       # Read-only bind of the wrapper entrypoint. Updating ctx-size sync
       # logic doesn't require rebuilding the image.
       - ./extensions/services/llama-server/lemonade-entrypoint.sh:/opt/lemonade-entrypoint.sh:ro,z
-    devices:
-      - /dev/dri:/dev/dri
-      - /dev/kfd:/dev/kfd
-    group_add:
-      - "${VIDEO_GID:-44}"
-      - "${RENDER_GID:-992}"
     environment:
       # Empty default — Phase 06 sets HSA_OVERRIDE_GFX_VERSION=11.5.1 only when
       # the detected gfx target is gfx1151 (Strix Halo, not in ROCm's native
