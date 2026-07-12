@@ -17,7 +17,7 @@ services:
       - HSA_OVERRIDE_GFX_VERSION=${COMFYUI_AMD_HSA_OVERRIDE_GFX_VERSION:-}
       - HSA_ENABLE_SDMA=0
     volumes:
-      - ${YUYINODS_MODELS_DIR:-/home/parallax/ODS/models}:/models:ro,z
+      - ${YUYINODS_MODELS_DIR:-/home/parallax/ODS/models}:/models:z
       - ./data/comfyui/output:/output:z
       - ./data/comfyui/input:/input:z
       - ./data/comfyui/workflows:/workflows:ro,z
