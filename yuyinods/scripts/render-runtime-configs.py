@@ -69,9 +69,9 @@ def render_litellm_lemonade(inputs: RenderInputs) -> RenderedFile:
     model = lemonade_model_id(inputs)
     api_base = inputs.lemonade_api_base.rstrip("/") or "http://llama-server:8080/api/v1"
     content = f"""model_list:
-  - model_name: Llama-3.1-8B-Lexi-Uncensored-V2
+  - model_name: Dolphin-3.0-Llama-3.1-8B
     litellm_params:
-      model: openai/extra.Llama-3.1-8B-Lexi-Uncensored-V2-Q4_K_M.gguf
+      model: openai/extra.Dolphin3.0-Llama3.1-8B-Q4_K_M.gguf
       api_base: {api_base}
       api_key: {inputs.litellm_key}
       extra_body:
